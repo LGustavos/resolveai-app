@@ -64,17 +64,19 @@ export async function getActiveProviders(
 
   const { data } = await query;
 
-  let providers = (data ?? []).map((p) => ({
-    ...p,
-    user: p.user as { full_name: string; avatar_url: string | null },
-    categories: (
-      p.categories as { category: { id: string; name: string; slug: string } }[]
-    ).map((pc) => pc.category),
-    average_rating: (p.ratings as { average_rating: number; review_count: number }[])?.[0]
-      ?.average_rating ?? null,
-    review_count: (p.ratings as { average_rating: number; review_count: number }[])?.[0]
-      ?.review_count ?? 0,
-  }));
+  let providers = (data ?? [])
+    .filter((p) => p.user !== null)
+    .map((p) => ({
+      ...p,
+      user: p.user as { full_name: string; avatar_url: string | null },
+      categories: (
+        p.categories as { category: { id: string; name: string; slug: string } }[]
+      ).map((pc) => pc.category),
+      average_rating: (p.ratings as { average_rating: number; review_count: number }[])?.[0]
+        ?.average_rating ?? null,
+      review_count: (p.ratings as { average_rating: number; review_count: number }[])?.[0]
+        ?.review_count ?? 0,
+    }));
 
   // Filter by category
   if (filters?.categorySlug) {

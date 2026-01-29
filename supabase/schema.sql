@@ -107,9 +107,10 @@ alter table public.portfolio_images enable row level security;
 alter table public.reviews enable row level security;
 
 -- USERS policies
-create policy "Users can read own data"
+create policy "Authenticated users can read all users"
   on public.users for select
-  using (auth.uid() = id);
+  to authenticated
+  using (true);
 
 create policy "Users can update own data"
   on public.users for update
@@ -267,8 +268,8 @@ create or replace function public.handle_provider_role()
 returns trigger as $$
 begin
   if new.role = 'PROVIDER' and old.role = 'CLIENT' then
-    insert into public.provider_profiles (user_id)
-    values (new.id)
+    insert into public.provider_profiles (user_id, is_active)
+    values (new.id, true)
     on conflict (user_id) do nothing;
   end if;
   return new;
@@ -284,8 +285,8 @@ create or replace function public.handle_new_provider()
 returns trigger as $$
 begin
   if new.role = 'PROVIDER' then
-    insert into public.provider_profiles (user_id)
-    values (new.id)
+    insert into public.provider_profiles (user_id, is_active)
+    values (new.id, true)
     on conflict (user_id) do nothing;
   end if;
   return new;
