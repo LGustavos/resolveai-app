@@ -1,0 +1,123 @@
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { getActiveProviders, getCategories } from "@/lib/supabase/queries";
+import { ProviderCard } from "@/components/providers/provider-card";
+import { CategoryFilter } from "@/components/providers/category-filter";
+import { HomeHero } from "@/components/layout/home-hero";
+import { ProviderGrid } from "@/components/providers/provider-grid";
+import { ArrowRight, Wrench } from "lucide-react";
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ categoria?: string; ordenar?: string }>;
+}) {
+  const params = await searchParams;
+  const supabase = await createClient();
+  const [providers, categories] = await Promise.all([
+    getActiveProviders(supabase, {
+      categorySlug: params.categoria,
+      orderBy: params.ordenar === "avaliacao" ? "rating" : "recent",
+    }),
+    getCategories(supabase),
+  ]);
+
+  // Featured providers (top rated)
+  const featured = providers.filter(
+    (p) => p.average_rating !== null && p.average_rating >= 4.5
+  );
+
+  return (
+    <div className="space-y-6">
+      <HomeHero />
+
+      <CategoryFilter
+        categories={categories}
+        activeSlug={params.categoria}
+      />
+
+      {/* Featured section */}
+      {featured.length > 0 && !params.categoria && (
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Em destaque</h2>
+            <Link
+              href="/search?ordenar=avaliacao"
+              className="flex items-center gap-1 text-sm font-medium text-primary"
+            >
+              Ver todos
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible">
+            {featured.slice(0, 6).map((provider) => (
+              <div key={provider.id} className="min-w-[280px] sm:min-w-0">
+                <ProviderCard provider={provider} featured />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All providers */}
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">Profissionais</h2>
+        {providers.length === 0 ? (
+          <div className="flex flex-col items-center py-12 text-center">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+              <svg
+                className="h-7 w-7 text-muted-foreground"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <p className="font-medium text-foreground">
+              Nenhum prestador encontrado
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Tente buscar por outra categoria
+            </p>
+          </div>
+        ) : (
+          <ProviderGrid>
+            {providers.map((provider) => (
+              <ProviderCard key={provider.id} provider={provider} />
+            ))}
+          </ProviderGrid>
+        )}
+      </div>
+
+      {/* CTA Banner */}
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <Wrench className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground">
+              Quer oferecer seus serviços?
+            </h3>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Cadastre-se como prestador e comece a receber clientes
+            </p>
+            <Link
+              href="/register"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+            >
+              Começar agora
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
