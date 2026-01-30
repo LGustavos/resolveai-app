@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Home, Search, Heart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,13 +20,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-white">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link href="/home" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg gradient-bg">
-            <span className="text-sm font-bold text-white">R</span>
-          </div>
-          <span className="text-lg font-bold text-foreground">
-            ResolveAí
-          </span>
+        <Link href="/home" className="flex items-center">
+          <Image
+            src="/logo.png"
+            alt="ResolveAí"
+            width={140}
+            height={36}
+            className="h-9 w-auto"
+            priority
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
