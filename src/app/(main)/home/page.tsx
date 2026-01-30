@@ -1,6 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getActiveProviders, getCategories } from "@/lib/supabase/queries";
+import { getActiveProviders, getCategories, getCurrentUser, getUserFavorites } from "@/lib/supabase/queries";
+
+export const metadata: Metadata = {
+  title: "ResolveAí - Encontre Serviços Locais",
+  description:
+    "Encontre prestadores de serviços locais na sua cidade. Pintores, eletricistas, encanadores e mais profissionais avaliados.",
+  openGraph: {
+    title: "ResolveAí - Encontre Serviços Locais",
+    description:
+      "Encontre prestadores de serviços locais na sua cidade. Pintores, eletricistas, encanadores e mais.",
+    type: "website",
+  },
+};
 import { ProviderCard } from "@/components/providers/provider-card";
 import { CategoryFilter } from "@/components/providers/category-filter";
 import { HomeHero } from "@/components/layout/home-hero";
@@ -14,13 +27,19 @@ export default async function HomePage({
 }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [providers, categories] = await Promise.all([
+  const [providersResult, categories, currentUser] = await Promise.all([
     getActiveProviders(supabase, {
       categorySlug: params.categoria,
       orderBy: params.ordenar === "avaliacao" ? "rating" : "recent",
     }),
     getCategories(supabase),
+    getCurrentUser(supabase),
   ]);
+  const providers = providersResult.providers;
+
+  const favoriteIds = currentUser
+    ? await getUserFavorites(supabase, currentUser.id)
+    : [];
 
   // Featured providers (top rated)
   const featured = providers.filter(
@@ -52,7 +71,12 @@ export default async function HomePage({
           <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible">
             {featured.slice(0, 6).map((provider) => (
               <div key={provider.id} className="min-w-[280px] sm:min-w-0">
-                <ProviderCard provider={provider} featured />
+                <ProviderCard
+                  provider={provider}
+                  featured
+                  userId={currentUser?.id ?? null}
+                  isFavorited={favoriteIds.includes(provider.id)}
+                />
               </div>
             ))}
           </div>
@@ -89,7 +113,12 @@ export default async function HomePage({
         ) : (
           <ProviderGrid>
             {providers.map((provider) => (
-              <ProviderCard key={provider.id} provider={provider} />
+              <ProviderCard
+                key={provider.id}
+                provider={provider}
+                userId={currentUser?.id ?? null}
+                isFavorited={favoriteIds.includes(provider.id)}
+              />
             ))}
           </ProviderGrid>
         )}

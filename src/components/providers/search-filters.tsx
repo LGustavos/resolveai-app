@@ -18,6 +18,7 @@ interface SearchFiltersProps {
   activeCategory?: string;
   activeNeighborhood?: string;
   activeOrder?: string;
+  activeSearch?: string;
 }
 
 export function SearchFilters({
@@ -26,10 +27,12 @@ export function SearchFilters({
   activeCategory,
   activeNeighborhood,
   activeOrder,
+  activeSearch,
 }: SearchFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(activeSearch ?? "");
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -53,7 +56,13 @@ export function SearchFilters({
             type="text"
             placeholder="Buscar profissionais..."
             className="h-10 w-full rounded-lg border border-border bg-white pl-10 pr-4 text-sm outline-none transition-colors focus:border-primary"
-            readOnly
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                updateParam("q", searchTerm.trim() || "all");
+              }
+            }}
           />
         </div>
         <Button

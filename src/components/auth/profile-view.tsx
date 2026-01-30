@@ -127,7 +127,7 @@ export function ProfileView({ user, providerProfile }: ProfileViewProps) {
 
         {isProvider && (
           <Link
-            href="/profile/edit"
+            href="/provider/edit"
             className="flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
           >
             <div className="flex items-center gap-3">
@@ -142,15 +142,18 @@ export function ProfileView({ user, providerProfile }: ProfileViewProps) {
           </Link>
         )}
 
-        <button className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50">
+        <Link
+          href="/termos"
+          className="flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
+        >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
               <HelpCircle className="h-4 w-4 text-muted-foreground" />
             </div>
-            <span className="text-sm font-medium">Ajuda e suporte</span>
+            <span className="text-sm font-medium">Termos e privacidade</span>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </button>
+        </Link>
       </div>
 
       {/* Sign out */}

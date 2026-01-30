@@ -179,6 +179,38 @@ export async function deletePortfolioImage(
 }
 
 // ============================================
+// FAVORITE MUTATIONS
+// ============================================
+
+export async function toggleFavorite(
+  supabase: SupabaseClient,
+  userId: string,
+  providerId: string
+) {
+  // Check if already favorited
+  const { data: existing } = await supabase
+    .from("favorites")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("provider_id", providerId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from("favorites")
+      .delete()
+      .eq("id", existing.id);
+    return { isFavorited: false, error };
+  } else {
+    const { error } = await supabase.from("favorites").insert({
+      user_id: userId,
+      provider_id: providerId,
+    });
+    return { isFavorited: true, error };
+  }
+}
+
+// ============================================
 // REVIEW MUTATIONS
 // ============================================
 

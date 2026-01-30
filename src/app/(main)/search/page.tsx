@@ -1,35 +1,72 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import {
   getActiveProviders,
   getCategories,
   getNeighborhoods,
+  getCurrentUser,
+  getUserFavorites,
 } from "@/lib/supabase/queries";
+
+export const metadata: Metadata = {
+  title: "Buscar Serviços - ResolveAí",
+  description:
+    "Busque e encontre prestadores de serviços locais por categoria, bairro e avaliação.",
+};
 import { ProviderCard } from "@/components/providers/provider-card";
 import { SearchFilters } from "@/components/providers/search-filters";
 import { ProviderGrid } from "@/components/providers/provider-grid";
 import { Search } from "lucide-react";
 
+const PAGE_SIZE = 12;
+
 export default async function SearchPage({
   searchParams,
 }: {
   searchParams: Promise<{
+    q?: string;
     categoria?: string;
     bairro?: string;
     ordenar?: string;
+    pagina?: string;
   }>;
 }) {
   const params = await searchParams;
+  const page = Math.max(1, parseInt(params.pagina ?? "1", 10) || 1);
   const supabase = await createClient();
 
-  const [providers, categories, neighborhoods] = await Promise.all([
-    getActiveProviders(supabase, {
-      categorySlug: params.categoria,
-      neighborhood: params.bairro,
-      orderBy: params.ordenar === "avaliacao" ? "rating" : "recent",
-    }),
-    getCategories(supabase),
-    getNeighborhoods(supabase),
-  ]);
+  const [{ providers, total }, categories, neighborhoods, currentUser] =
+    await Promise.all([
+      getActiveProviders(supabase, {
+        search: params.q,
+        categorySlug: params.categoria,
+        neighborhood: params.bairro,
+        orderBy: params.ordenar === "avaliacao" ? "rating" : "recent",
+        page,
+        pageSize: PAGE_SIZE,
+      }),
+      getCategories(supabase),
+      getNeighborhoods(supabase),
+      getCurrentUser(supabase),
+    ]);
+
+  const favoriteIds = currentUser
+    ? await getUserFavorites(supabase, currentUser.id)
+    : [];
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // Build pagination URL helper
+  function pageUrl(p: number) {
+    const sp = new URLSearchParams();
+    if (params.q) sp.set("q", params.q);
+    if (params.categoria) sp.set("categoria", params.categoria);
+    if (params.bairro) sp.set("bairro", params.bairro);
+    if (params.ordenar) sp.set("ordenar", params.ordenar);
+    if (p > 1) sp.set("pagina", String(p));
+    const qs = sp.toString();
+    return `/search${qs ? `?${qs}` : ""}`;
+  }
 
   return (
     <div className="space-y-4">
@@ -41,10 +78,11 @@ export default async function SearchPage({
         activeCategory={params.categoria}
         activeNeighborhood={params.bairro}
         activeOrder={params.ordenar}
+        activeSearch={params.q}
       />
 
       <p className="text-sm text-muted-foreground">
-        {providers.length} resultado{providers.length !== 1 ? "s" : ""}
+        {total} resultado{total !== 1 ? "s" : ""}
       </p>
 
       {providers.length === 0 ? (
@@ -60,11 +98,75 @@ export default async function SearchPage({
           </p>
         </div>
       ) : (
-        <ProviderGrid>
-          {providers.map((provider) => (
-            <ProviderCard key={provider.id} provider={provider} />
-          ))}
-        </ProviderGrid>
+        <>
+          <ProviderGrid>
+            {providers.map((provider) => (
+              <ProviderCard
+                key={provider.id}
+                provider={provider}
+                userId={currentUser?.id ?? null}
+                isFavorited={favoriteIds.includes(provider.id)}
+              />
+            ))}
+          </ProviderGrid>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <nav className="flex items-center justify-center gap-2 pt-4">
+              {page > 1 && (
+                <a
+                  href={pageUrl(page - 1)}
+                  className="inline-flex h-9 items-center rounded-lg border border-border px-3 text-sm font-medium hover:bg-muted"
+                >
+                  Anterior
+                </a>
+              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(
+                  (p) =>
+                    p === 1 ||
+                    p === totalPages ||
+                    Math.abs(p - page) <= 1
+                )
+                .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                  if (i > 0 && p - (arr[i - 1] as number) > 1)
+                    acc.push("...");
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((item, i) =>
+                  item === "..." ? (
+                    <span
+                      key={`dots-${i}`}
+                      className="px-1 text-muted-foreground"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <a
+                      key={item}
+                      href={pageUrl(item as number)}
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium ${
+                        item === page
+                          ? "bg-primary text-white"
+                          : "border border-border hover:bg-muted"
+                      }`}
+                    >
+                      {item}
+                    </a>
+                  )
+                )}
+              {page < totalPages && (
+                <a
+                  href={pageUrl(page + 1)}
+                  className="inline-flex h-9 items-center rounded-lg border border-border px-3 text-sm font-medium hover:bg-muted"
+                >
+                  Próximo
+                </a>
+              )}
+            </nav>
+          )}
+        </>
       )}
     </div>
   );

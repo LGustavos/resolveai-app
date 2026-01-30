@@ -28,6 +28,17 @@ interface ProviderProfileFormProps {
   userId: string;
 }
 
+function formatWhatsApp(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+}
+
+function unformatWhatsApp(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
 export function ProviderProfileForm({
   profile,
   categories,
@@ -37,7 +48,7 @@ export function ProviderProfileForm({
 
   const [description, setDescription] = useState(profile.description);
   const [neighborhood, setNeighborhood] = useState(profile.neighborhood);
-  const [whatsapp, setWhatsapp] = useState(profile.whatsapp);
+  const [whatsapp, setWhatsapp] = useState(formatWhatsApp(profile.whatsapp));
   const [isActive, setIsActive] = useState(profile.is_active);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     profile.categories.map((c) => c.id)
@@ -52,8 +63,26 @@ export function ProviderProfileForm({
     );
   }
 
+  function handleWhatsAppChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+    setWhatsapp(formatWhatsApp(digits));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const rawWhatsapp = unformatWhatsApp(whatsapp);
+
+    if (rawWhatsapp && (rawWhatsapp.length < 10 || rawWhatsapp.length > 11)) {
+      toast.error("WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos).");
+      return;
+    }
+
+    if (selectedCategories.length === 0) {
+      toast.error("Selecione pelo menos uma categoria de serviço.");
+      return;
+    }
+
     setLoading(true);
 
     const { error: profileError } = await updateProviderProfile(
@@ -62,7 +91,7 @@ export function ProviderProfileForm({
       {
         description,
         neighborhood,
-        whatsapp,
+        whatsapp: rawWhatsapp,
         is_active: isActive,
       }
     );
@@ -123,10 +152,11 @@ export function ProviderProfileForm({
           </Label>
           <Input
             id="whatsapp"
-            placeholder="Ex: 11999999999"
+            placeholder="(11) 99999-9999"
             value={whatsapp}
-            onChange={(e) => setWhatsapp(e.target.value)}
+            onChange={handleWhatsAppChange}
             className="h-11 rounded-lg border-border"
+            inputMode="tel"
           />
         </div>
 

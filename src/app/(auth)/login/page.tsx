@@ -20,9 +20,20 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!email.trim()) {
+      toast.error("Informe seu email.");
+      return;
+    }
+
+    if (!password) {
+      toast.error("Informe sua senha.");
+      return;
+    }
+
     setLoading(true);
 
-    const { error } = await signInWithEmail(supabase, email, password);
+    const { error } = await signInWithEmail(supabase, email.trim(), password);
 
     if (error) {
       toast.error("Erro ao entrar. Verifique suas credenciais.");
@@ -81,6 +92,15 @@ export default function LoginPage() {
               className="h-11 rounded-lg border-border"
               required
             />
+          </div>
+
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Esqueci minha senha
+            </Link>
           </div>
 
           <Button

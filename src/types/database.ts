@@ -50,6 +50,13 @@ export interface Review {
   created_at: string;
 }
 
+export interface Favorite {
+  id: string;
+  user_id: string;
+  provider_id: string;
+  created_at: string;
+}
+
 // Joined / computed types
 
 export interface ProviderWithDetails extends ProviderProfile {

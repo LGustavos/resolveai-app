@@ -24,13 +24,29 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!fullName.trim() || fullName.trim().length < 3) {
+      toast.error("Informe seu nome completo (mínimo 3 caracteres).");
+      return;
+    }
+
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Informe um email válido.");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("A senha deve ter no mínimo 6 caracteres.");
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await signUpWithEmail(
       supabase,
-      email,
+      email.trim(),
       password,
-      fullName,
+      fullName.trim(),
       role
     );
 
@@ -179,6 +195,18 @@ export default function RegisterPage() {
               required
             />
           </div>
+
+          <p className="text-xs text-muted-foreground text-center">
+            Ao criar uma conta, você concorda com os{" "}
+            <Link href="/termos" className="text-primary hover:underline">
+              Termos de Uso
+            </Link>{" "}
+            e a{" "}
+            <Link href="/privacidade" className="text-primary hover:underline">
+              Política de Privacidade
+            </Link>
+            .
+          </p>
 
           <Button
             type="submit"

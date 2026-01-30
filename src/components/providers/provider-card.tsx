@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Star, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { FavoriteButton } from "@/components/providers/favorite-button";
 
 interface ProviderCardProps {
   provider: {
@@ -15,9 +16,11 @@ interface ProviderCardProps {
     review_count: number;
   };
   featured?: boolean;
+  userId?: string | null;
+  isFavorited?: boolean;
 }
 
-export function ProviderCard({ provider, featured }: ProviderCardProps) {
+export function ProviderCard({ provider, featured, userId, isFavorited }: ProviderCardProps) {
   const initials = provider.user.full_name
     .split(" ")
     .map((n) => n[0])
@@ -28,6 +31,15 @@ export function ProviderCard({ provider, featured }: ProviderCardProps) {
   return (
     <Link href={`/provider/${provider.id}`} className="block">
       <div className="relative overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-shadow hover:shadow-md">
+        {userId !== undefined && (
+          <div className="absolute top-2 right-2 z-10">
+            <FavoriteButton
+              providerId={provider.id}
+              userId={userId}
+              isFavorited={isFavorited ?? false}
+            />
+          </div>
+        )}
         <div className="flex gap-3 p-3">
           {/* Square avatar */}
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
