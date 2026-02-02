@@ -4,27 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
-  updateProviderProfile,
+  createProviderProfile,
   setProviderCategories,
 } from "@/lib/supabase/mutations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { Save, ArrowLeft, Loader2 } from "lucide-react";
 import { CategoryMultiSelect } from "@/components/ui/category-multi-select";
+import { toast } from "sonner";
+import { Loader2, Wrench } from "lucide-react";
 
-interface ProviderProfileFormProps {
-  profile: {
-    id: string;
-    description: string;
-    city: string;
-    whatsapp: string;
-    is_active: boolean;
-    categories: { id: string; name: string; slug: string }[];
-  };
+interface BecomeProviderFormProps {
   categories: { id: string; name: string; slug: string }[];
   userId: string;
 }
@@ -36,24 +27,17 @@ function formatWhatsApp(value: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
 }
 
-function unformatWhatsApp(value: string): string {
-  return value.replace(/\D/g, "");
-}
-
-export function ProviderProfileForm({
-  profile,
+export function BecomeProviderForm({
   categories,
-}: ProviderProfileFormProps) {
+  userId,
+}: BecomeProviderFormProps) {
   const router = useRouter();
   const supabase = createClient();
 
-  const [description, setDescription] = useState(profile.description);
-  const [city, setCity] = useState(profile.city);
-  const [whatsapp, setWhatsapp] = useState(formatWhatsApp(profile.whatsapp));
-  const [isActive, setIsActive] = useState(profile.is_active);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    profile.categories.map((c) => c.id)
-  );
+  const [description, setDescription] = useState("");
+  const [city, setCity] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   function handleWhatsAppChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -64,10 +48,17 @@ export function ProviderProfileForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const rawWhatsapp = unformatWhatsApp(whatsapp);
+    const rawWhatsapp = whatsapp.replace(/\D/g, "");
+
+    if (!city.trim()) {
+      toast.error("Informe sua cidade.");
+      return;
+    }
 
     if (rawWhatsapp && (rawWhatsapp.length < 10 || rawWhatsapp.length > 11)) {
-      toast.error("WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos).");
+      toast.error(
+        "WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos)."
+      );
       return;
     }
 
@@ -78,36 +69,55 @@ export function ProviderProfileForm({
 
     setLoading(true);
 
-    const { error: profileError } = await updateProviderProfile(
+    const { error: profileError, profileId } = await createProviderProfile(
       supabase,
-      profile.id,
+      userId,
       {
         description,
         city: city.trim(),
         whatsapp: rawWhatsapp,
-        is_active: isActive,
       }
     );
 
+    if (profileError || !profileId) {
+      toast.error("Erro ao criar perfil de prestador.");
+      setLoading(false);
+      return;
+    }
+
     const { error: catError } = await setProviderCategories(
       supabase,
-      profile.id,
+      profileId,
       selectedCategories
     );
 
-    if (profileError || catError) {
-      toast.error("Erro ao salvar perfil.");
-    } else {
-      toast.success("Perfil atualizado!");
-      router.push("/profile");
-      router.refresh();
+    if (catError) {
+      toast.error("Erro ao salvar categorias.");
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
+    toast.success("Perfil de prestador criado com sucesso!");
+    router.push("/profile");
+    router.refresh();
   }
 
   return (
     <div className="rounded-xl border border-border bg-white p-5">
+      <div className="mb-5 flex items-center gap-3 rounded-lg bg-primary/5 border border-primary/10 p-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+          <Wrench className="h-5 w-5 text-primary" />
+        </div>
+        <div>
+          <p className="text-sm font-medium">
+            Sua conta será convertida para prestador de serviços
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Você poderá receber avaliações e aparecer nas buscas
+          </p>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Description */}
         <div className="space-y-1.5">
@@ -127,7 +137,7 @@ export function ProviderProfileForm({
         {/* City */}
         <div className="space-y-1.5">
           <Label htmlFor="city" className="text-sm font-medium">
-            Cidade
+            Cidade *
           </Label>
           <Input
             id="city"
@@ -135,6 +145,7 @@ export function ProviderProfileForm({
             value={city}
             onChange={(e) => setCity(e.target.value)}
             className="h-11 rounded-lg border-border"
+            required
           />
         </div>
 
@@ -156,7 +167,7 @@ export function ProviderProfileForm({
         {/* Categories */}
         <div className="space-y-2">
           <Label className="text-sm font-medium">
-            Categorias de serviço
+            Categorias de serviço *
           </Label>
           <CategoryMultiSelect
             categories={categories}
@@ -165,61 +176,18 @@ export function ProviderProfileForm({
           />
         </div>
 
-        {/* Active toggle */}
-        <div className="rounded-lg border border-border p-4">
-          <label className="flex cursor-pointer items-center justify-between">
-            <div>
-              <p className="text-sm font-medium">Perfil ativo</p>
-              <p className="text-xs text-muted-foreground">
-                Visível para clientes na busca
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isActive}
-              onClick={() => setIsActive(!isActive)}
-              className={cn(
-                "relative h-6 w-11 rounded-full transition-colors",
-                isActive ? "bg-primary" : "bg-border"
-              )}
-            >
-              <span
-                className={cn(
-                  "absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform",
-                  isActive && "translate-x-5"
-                )}
-              />
-            </button>
-          </label>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3 pt-1">
-          <Button
-            type="submit"
-            disabled={loading}
-            className="flex-1 h-11 rounded-lg font-semibold gap-2 gradient-bg"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Salvar alterações
-              </>
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 rounded-lg gap-2 border-border"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Button>
-        </div>
+        {/* Submit */}
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 rounded-lg font-semibold gap-2 gradient-bg"
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Criar perfil de prestador"
+          )}
+        </Button>
       </form>
     </div>
   );

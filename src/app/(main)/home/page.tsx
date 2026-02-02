@@ -53,6 +53,7 @@ export default async function HomePage({
       <CategoryFilter
         categories={categories}
         activeSlug={params.categoria}
+        limit={6}
       />
 
       {/* Featured section */}
@@ -124,29 +125,31 @@ export default async function HomePage({
         )}
       </div>
 
-      {/* CTA Banner */}
-      <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <Wrench className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-foreground">
-              Quer oferecer seus serviços?
-            </h3>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Cadastre-se como prestador e comece a receber clientes
-            </p>
-            <Link
-              href="/register"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
-            >
-              Começar agora
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+      {/* CTA Banner - only for CLIENT users or unauthenticated */}
+      {(!currentUser || currentUser.role === "CLIENT") && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <Wrench className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground">
+                Quer oferecer seus serviços?
+              </h3>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Cadastre-se como prestador e comece a receber clientes
+              </p>
+              <Link
+                href={currentUser ? "/become-provider" : "/register"}
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+              >
+                Começar agora
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,12 @@
+import { BackButton } from "@/components/ui/back-button";
+
 export default function TermosPage() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Termos de Uso</h1>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <BackButton />
+        <h1 className="text-xl font-bold tracking-tight">Termos de Uso</h1>
+      </div>
 
       <div className="rounded-xl border border-border bg-white p-6 space-y-5 text-sm text-muted-foreground leading-relaxed">
         <p className="text-xs text-muted-foreground">

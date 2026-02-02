@@ -11,7 +11,7 @@ interface ProviderCardProps {
     id: string;
     user: { full_name: string; avatar_url: string | null };
     categories: { id: string; name: string; slug: string }[];
-    neighborhood: string;
+    city: string;
     average_rating: number | null;
     review_count: number;
   };
@@ -88,10 +88,10 @@ export function ProviderCard({ provider, featured, userId, isFavorited }: Provid
                   <span>({provider.review_count})</span>
                 </span>
               )}
-              {provider.neighborhood && (
+              {provider.city && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
-                  {provider.neighborhood}
+                  {provider.city}
                 </span>
               )}
             </div>

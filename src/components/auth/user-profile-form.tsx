@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
-import { updateUser } from "@/lib/supabase/mutations";
+import { updateUser, uploadAvatar } from "@/lib/supabase/mutations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Save, ArrowLeft, Loader2 } from "lucide-react";
+import { Save, ArrowLeft, Loader2, Camera } from "lucide-react";
 
 interface UserProfileFormProps {
   user: {
@@ -22,9 +23,35 @@ interface UserProfileFormProps {
 export function UserProfileForm({ user }: UserProfileFormProps) {
   const router = useRouter();
   const supabase = createClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState(user.full_name);
+  const [avatarUrl, setAvatarUrl] = useState(user.avatar_url);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const initials = user.full_name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  function handleAvatarSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("A imagem deve ter no máximo 2MB.");
+      return;
+    }
+
+    setAvatarFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setAvatarPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +62,21 @@ export function UserProfileForm({ user }: UserProfileFormProps) {
     }
 
     setLoading(true);
+
+    // Upload avatar if changed
+    if (avatarFile) {
+      const { error: avatarError, url } = await uploadAvatar(
+        supabase,
+        user.id,
+        avatarFile
+      );
+      if (avatarError) {
+        toast.error("Erro ao enviar foto.");
+        setLoading(false);
+        return;
+      }
+      if (url) setAvatarUrl(url);
+    }
 
     const { error } = await updateUser(supabase, user.id, {
       full_name: fullName.trim(),
@@ -51,9 +93,50 @@ export function UserProfileForm({ user }: UserProfileFormProps) {
     setLoading(false);
   }
 
+  const displayAvatar = avatarPreview || avatarUrl;
+
   return (
     <div className="rounded-xl border border-border bg-white p-5">
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Avatar */}
+        <div className="flex flex-col items-center gap-3">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="group relative h-24 w-24 rounded-full overflow-hidden border-2 border-border hover:border-primary transition-colors"
+          >
+            {displayAvatar ? (
+              <Image
+                src={displayAvatar}
+                alt="Avatar"
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-primary/10 text-primary font-bold text-2xl">
+                {initials}
+              </div>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="h-6 w-6 text-white" />
+            </div>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarSelect}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="text-sm font-medium text-primary"
+          >
+            Alterar foto
+          </button>
+        </div>
+
         <div className="space-y-1.5">
           <Label htmlFor="fullName" className="text-sm font-medium">
             Nome completo

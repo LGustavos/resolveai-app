@@ -36,10 +36,19 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/login", "/register", "/callback", "/forgot-password", "/reset-password", "/termos", "/privacidade"];
+  const publicRoutes = ["/login", "/register", "/callback", "/forgot-password", "/reset-password"];
+  const sharedRoutes = ["/termos", "/privacidade"];
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
   );
+  const isSharedRoute = sharedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  // Shared routes (termos, privacidade) are accessible by anyone
+  if (isSharedRoute) {
+    return supabaseResponse;
+  }
 
   // If user is not authenticated and trying to access a protected route
   if (!user && !isPublicRoute) {
