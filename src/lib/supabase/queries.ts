@@ -41,7 +41,7 @@ export async function getActiveProviders(
   filters?: {
     search?: string;
     categorySlug?: string;
-    neighborhood?: string;
+    city?: string;
     orderBy?: "rating" | "recent";
     page?: number;
     pageSize?: number;
@@ -61,8 +61,8 @@ export async function getActiveProviders(
     )
     .eq("is_active", true);
 
-  if (filters?.neighborhood) {
-    query = query.ilike("neighborhood", `%${filters.neighborhood}%`);
+  if (filters?.city) {
+    query = query.eq("city", filters.city);
   }
 
   const { data } = await query;
@@ -177,7 +177,8 @@ export async function getProviderByUserId(
       categories:provider_categories(
         category:categories(*)
       ),
-      portfolio:portfolio_images(*)
+      portfolio:portfolio_images(*),
+      ratings:provider_ratings(average_rating, review_count)
     `
     )
     .eq("user_id", userId)
@@ -197,6 +198,10 @@ export async function getProviderByUserId(
       image_url: string;
       created_at: string;
     }[],
+    average_rating: (data.ratings as { average_rating: number; review_count: number }[])?.[0]
+      ?.average_rating ?? null,
+    review_count: (data.ratings as { average_rating: number; review_count: number }[])?.[0]
+      ?.review_count ?? 0,
   };
 }
 
@@ -281,7 +286,7 @@ export async function getUserFavoriteProviders(
     .filter((p) => p !== null && p.user !== null)
     .map((p) => ({
       id: p.id as string,
-      neighborhood: p.neighborhood as string,
+      city: p.city as string,
       description: p.description as string,
       user: p.user as { full_name: string; avatar_url: string | null },
       categories: (
@@ -295,16 +300,16 @@ export async function getUserFavoriteProviders(
 }
 
 // ============================================
-// NEIGHBORHOODS (distinct values from providers)
+// CITIES (distinct values from providers)
 // ============================================
 
-export async function getNeighborhoods(supabase: SupabaseClient) {
+export async function getCities(supabase: SupabaseClient) {
   const { data } = await supabase
     .from("provider_profiles")
-    .select("neighborhood")
+    .select("city")
     .eq("is_active", true)
-    .neq("neighborhood", "");
+    .neq("city", "");
 
-  const unique = [...new Set((data ?? []).map((d) => d.neighborhood))].sort();
+  const unique = [...new Set((data ?? []).map((d) => d.city))].sort();
   return unique;
 }

@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Star,
   Briefcase,
+  ImageIcon,
 } from "lucide-react";
 
 interface ProfileViewProps {
@@ -27,7 +28,7 @@ interface ProfileViewProps {
   providerProfile: {
     id: string;
     description: string;
-    neighborhood: string;
+    city: string;
     whatsapp: string;
     is_active: boolean;
     categories: { id: string; name: string; slug: string }[];
@@ -136,6 +137,23 @@ export function ProfileView({ user, providerProfile }: ProfileViewProps) {
               </div>
               <span className="text-sm font-medium">
                 Editar perfil de prestador
+              </span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        )}
+
+        {isProvider && (
+          <Link
+            href="/provider/portfolio"
+            className="flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <span className="text-sm font-medium">
+                Gerenciar portfólio
               </span>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />

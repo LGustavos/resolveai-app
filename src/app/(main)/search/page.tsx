@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getActiveProviders,
   getCategories,
-  getNeighborhoods,
+  getCities,
   getCurrentUser,
   getUserFavorites,
 } from "@/lib/supabase/queries";
@@ -11,7 +11,7 @@ import {
 export const metadata: Metadata = {
   title: "Buscar Serviços - ResolveAí",
   description:
-    "Busque e encontre prestadores de serviços locais por categoria, bairro e avaliação.",
+    "Busque e encontre prestadores de serviços locais por categoria, cidade e avaliação.",
 };
 import { ProviderCard } from "@/components/providers/provider-card";
 import { SearchFilters } from "@/components/providers/search-filters";
@@ -26,7 +26,7 @@ export default async function SearchPage({
   searchParams: Promise<{
     q?: string;
     categoria?: string;
-    bairro?: string;
+    cidade?: string;
     ordenar?: string;
     pagina?: string;
   }>;
@@ -35,18 +35,18 @@ export default async function SearchPage({
   const page = Math.max(1, parseInt(params.pagina ?? "1", 10) || 1);
   const supabase = await createClient();
 
-  const [{ providers, total }, categories, neighborhoods, currentUser] =
+  const [{ providers, total }, categories, cities, currentUser] =
     await Promise.all([
       getActiveProviders(supabase, {
         search: params.q,
         categorySlug: params.categoria,
-        neighborhood: params.bairro,
+        city: params.cidade,
         orderBy: params.ordenar === "avaliacao" ? "rating" : "recent",
         page,
         pageSize: PAGE_SIZE,
       }),
       getCategories(supabase),
-      getNeighborhoods(supabase),
+      getCities(supabase),
       getCurrentUser(supabase),
     ]);
 
@@ -61,7 +61,7 @@ export default async function SearchPage({
     const sp = new URLSearchParams();
     if (params.q) sp.set("q", params.q);
     if (params.categoria) sp.set("categoria", params.categoria);
-    if (params.bairro) sp.set("bairro", params.bairro);
+    if (params.cidade) sp.set("cidade", params.cidade);
     if (params.ordenar) sp.set("ordenar", params.ordenar);
     if (p > 1) sp.set("pagina", String(p));
     const qs = sp.toString();
@@ -74,9 +74,9 @@ export default async function SearchPage({
 
       <SearchFilters
         categories={categories}
-        neighborhoods={neighborhoods}
+        cities={cities}
         activeCategory={params.categoria}
-        activeNeighborhood={params.bairro}
+        activeCity={params.cidade}
         activeOrder={params.ordenar}
         activeSearch={params.q}
       />

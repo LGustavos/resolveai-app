@@ -32,7 +32,7 @@ export async function generateMetadata({
     title: `${name} - ${category} | ResolveAí`,
     description: provider.description
       ? provider.description.slice(0, 160)
-      : `${name} - ${category} em ${provider.neighborhood || "sua cidade"}. Veja avaliações e entre em contato pelo ResolveAí.`,
+      : `${name} - ${category} em ${provider.city || "sua cidade"}. Veja avaliações e entre em contato pelo ResolveAí.`,
     openGraph: {
       title: `${name} - ${category}${rating}`,
       description: provider.description

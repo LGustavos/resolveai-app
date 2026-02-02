@@ -69,15 +69,80 @@ export async function updateUser(
 }
 
 // ============================================
+// AVATAR MUTATIONS
+// ============================================
+
+export async function uploadAvatar(
+  supabase: SupabaseClient,
+  userId: string,
+  file: File
+) {
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${userId}/avatar.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(fileName, file, { upsert: true });
+
+  if (uploadError) return { error: uploadError, url: null };
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
+  const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+
+  const { error: dbError } = await supabase
+    .from("users")
+    .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+    .eq("id", userId);
+
+  return { error: dbError, url: avatarUrl };
+}
+
+// ============================================
 // PROVIDER MUTATIONS
 // ============================================
+
+export async function createProviderProfile(
+  supabase: SupabaseClient,
+  userId: string,
+  data: {
+    description: string;
+    city: string;
+    whatsapp: string;
+  }
+) {
+  // Update user role to PROVIDER
+  const { error: roleError } = await supabase
+    .from("users")
+    .update({ role: "PROVIDER" as UserRole, updated_at: new Date().toISOString() })
+    .eq("id", userId);
+
+  if (roleError) return { error: roleError, profileId: null };
+
+  // Create provider profile
+  const { data: profile, error } = await supabase
+    .from("provider_profiles")
+    .insert({
+      user_id: userId,
+      description: data.description,
+      city: data.city,
+      whatsapp: data.whatsapp,
+      is_active: true,
+    })
+    .select("id")
+    .single();
+
+  return { error, profileId: profile?.id ?? null };
+}
 
 export async function updateProviderProfile(
   supabase: SupabaseClient,
   profileId: string,
   data: {
     description?: string;
-    neighborhood?: string;
+    city?: string;
     whatsapp?: string;
     is_active?: boolean;
   }

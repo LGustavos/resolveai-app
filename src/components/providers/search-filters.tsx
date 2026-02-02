@@ -14,18 +14,18 @@ import {
 
 interface SearchFiltersProps {
   categories: { id: string; name: string; slug: string }[];
-  neighborhoods: string[];
+  cities: string[];
   activeCategory?: string;
-  activeNeighborhood?: string;
+  activeCity?: string;
   activeOrder?: string;
   activeSearch?: string;
 }
 
 export function SearchFilters({
   categories,
-  neighborhoods,
+  cities,
   activeCategory,
-  activeNeighborhood,
+  activeCity,
   activeOrder,
   activeSearch,
 }: SearchFiltersProps) {
@@ -41,10 +41,11 @@ export function SearchFilters({
     } else {
       params.set(key, value);
     }
+    params.delete("pagina");
     router.push(`/search?${params.toString()}`);
   }
 
-  const hasActiveFilters = activeCategory || activeNeighborhood;
+  const hasActiveFilters = activeCategory || activeCity;
 
   return (
     <div className="space-y-3">
@@ -125,7 +126,7 @@ export function SearchFilters({
                   <SelectTrigger className="h-11 rounded-lg border-border">
                     <SelectValue placeholder="Todas categorias" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-lg">
+                  <SelectContent className="rounded-lg max-h-60">
                     <SelectItem value="all">Todas categorias</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.slug}>
@@ -138,20 +139,20 @@ export function SearchFilters({
 
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
-                  Bairro
+                  Cidade
                 </label>
                 <Select
-                  value={activeNeighborhood ?? "all"}
-                  onValueChange={(v) => updateParam("bairro", v)}
+                  value={activeCity ?? "all"}
+                  onValueChange={(v) => updateParam("cidade", v)}
                 >
                   <SelectTrigger className="h-11 rounded-lg border-border">
-                    <SelectValue placeholder="Todos bairros" />
+                    <SelectValue placeholder="Todas cidades" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-lg">
-                    <SelectItem value="all">Todos bairros</SelectItem>
-                    {neighborhoods.map((n) => (
-                      <SelectItem key={n} value={n}>
-                        {n}
+                  <SelectContent className="rounded-lg max-h-60">
+                    <SelectItem value="all">Todas cidades</SelectItem>
+                    {cities.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
                       </SelectItem>
                     ))}
                   </SelectContent>

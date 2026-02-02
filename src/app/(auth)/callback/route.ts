@@ -6,14 +6,24 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/home";
 
+  // Handle OAuth errors from Supabase
+  const error = searchParams.get("error");
+  if (error) {
+    const desc =
+      searchParams.get("error_description") ?? "Erro na autenticação";
+    return NextResponse.redirect(
+      `${origin}/login?error=${encodeURIComponent(desc)}`
+    );
+  }
+
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
+    const { error: exchangeError } =
+      await supabase.auth.exchangeCodeForSession(code);
+    if (!exchangeError) {
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
-  // Return to login on error
   return NextResponse.redirect(`${origin}/login`);
 }

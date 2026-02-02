@@ -14,7 +14,7 @@ export interface ProviderProfile {
   id: string;
   user_id: string;
   description: string;
-  neighborhood: string;
+  city: string;
   whatsapp: string;
   is_active: boolean;
   created_at: string;
