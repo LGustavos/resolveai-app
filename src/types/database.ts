@@ -17,6 +17,9 @@ export interface ProviderProfile {
   city: string;
   whatsapp: string;
   is_active: boolean;
+  is_verified: boolean;
+  verified_at: string | null;
+  verification_status: "none" | "pending" | "approved" | "rejected";
   created_at: string;
   updated_at: string;
 }
@@ -25,7 +28,13 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  parent_id: string | null;
+  display_order: number;
   created_at: string;
+}
+
+export interface CategoryWithChildren extends Category {
+  children: Category[];
 }
 
 export interface ProviderCategory {
@@ -55,6 +64,24 @@ export interface Favorite {
   user_id: string;
   provider_id: string;
   created_at: string;
+}
+
+export interface VerificationDocument {
+  id: string;
+  provider_id: string;
+  document_type: "identity" | "selfie";
+  document_url: string;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+}
+
+export interface BusinessHours {
+  id: string;
+  provider_id: string;
+  day_of_week: number;
+  open_time: string | null;
+  close_time: string | null;
+  is_closed: boolean;
 }
 
 // Joined / computed types
