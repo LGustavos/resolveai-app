@@ -5,6 +5,9 @@ import { Star, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { FavoriteButton } from "@/components/providers/favorite-button";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { BusinessHoursBadge } from "@/components/providers/business-hours-display";
+import { BusinessHours } from "@/types/database";
 
 interface ProviderCardProps {
   provider: {
@@ -14,6 +17,8 @@ interface ProviderCardProps {
     city: string;
     average_rating: number | null;
     review_count: number;
+    is_verified?: boolean;
+    business_hours?: BusinessHours[];
   };
   featured?: boolean;
   userId?: string | null;
@@ -63,8 +68,9 @@ export function ProviderCard({ provider, featured, userId, isFavorited }: Provid
 
           {/* Info */}
           <div className="flex flex-1 flex-col justify-center min-w-0">
-            <h3 className="font-semibold text-foreground leading-tight truncate">
+            <h3 className="font-semibold text-foreground leading-tight truncate flex items-center gap-1">
               {provider.user.full_name}
+              {provider.is_verified && <VerifiedBadge size="sm" />}
             </h3>
 
             {provider.categories.length > 0 && (
@@ -95,6 +101,11 @@ export function ProviderCard({ provider, featured, userId, isFavorited }: Provid
                 </span>
               )}
             </div>
+            {provider.business_hours && provider.business_hours.length > 0 && (
+              <div className="mt-1.5">
+                <BusinessHoursBadge hours={provider.business_hours} />
+              </div>
+            )}
           </div>
         </div>
       </div>

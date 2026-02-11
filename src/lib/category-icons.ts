@@ -171,6 +171,19 @@ export const categoryIconMap: Record<string, React.ElementType> = {
   lavanderia: WashingMachine,
   soldador: Flame,
   outros: CircleHelp,
+
+  // Parent category groups
+  "construcao-reformas": HardHat,
+  "instalacoes": Zap,
+  "limpeza-organizacao": Sparkles,
+  "manutencao-reparos": Wrench,
+  "beleza-estetica": Scissors,
+  "saude-bem-estar": Heart,
+  "educacao-aulas": BookOpen,
+  "eventos-gastronomia": PartyPopper,
+  "transporte-mudancas": Truck,
+  "servicos-profissionais": FileText,
+  "pets": PawPrint,
 };
 
 export function getCategoryIcon(slug: string): React.ElementType {

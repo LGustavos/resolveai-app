@@ -11,6 +11,94 @@ export function getWhatsAppUrl(phone: string, message?: string) {
 
 export const MAX_PORTFOLIO_IMAGES = 10;
 
+// Parent category groups for hierarchical filtering
+export const CATEGORY_GROUPS = [
+  {
+    name: "Construção e Reformas",
+    slug: "construcao-reformas",
+    subcategories: [
+      "pedreiro", "pintor", "gesseiro", "azulejista", "vidraceiro",
+      "serralheiro", "marceneiro", "carpinteiro", "impermeabilizador", "mestre-de-obras",
+    ],
+  },
+  {
+    name: "Instalações",
+    slug: "instalacoes",
+    subcategories: [
+      "eletricista", "encanador", "instalador-ar-condicionado",
+      "instalador-tv-antenas", "instalador-cameras", "instalador-redes",
+    ],
+  },
+  {
+    name: "Limpeza e Organização",
+    slug: "limpeza-organizacao",
+    subcategories: [
+      "diarista", "faxineira", "lavador-estofados", "dedetizador", "jardineiro", "piscineiro",
+    ],
+  },
+  {
+    name: "Manutenção e Reparos",
+    slug: "manutencao-reparos",
+    subcategories: [
+      "chaveiro", "montador-moveis", "tecnico-eletrodomesticos",
+      "tecnico-celular", "tecnico-informatica", "mecanico",
+      "eletricista-automotivo", "borracheiro",
+    ],
+  },
+  {
+    name: "Beleza e Estética",
+    slug: "beleza-estetica",
+    subcategories: [
+      "cabeleireira", "manicure", "maquiadora", "barbeiro",
+      "designer-sobrancelhas", "esteticista", "massagista",
+    ],
+  },
+  {
+    name: "Saúde e Bem-Estar",
+    slug: "saude-bem-estar",
+    subcategories: [
+      "personal-trainer", "fisioterapeuta", "nutricionista",
+      "cuidador-idosos", "enfermeiro",
+    ],
+  },
+  {
+    name: "Educação e Aulas",
+    slug: "educacao-aulas",
+    subcategories: [
+      "professor-particular", "professor-musica", "professor-idiomas", "instrutor-autoescola",
+    ],
+  },
+  {
+    name: "Eventos e Gastronomia",
+    slug: "eventos-gastronomia",
+    subcategories: [
+      "cozinheira", "confeiteira", "buffet", "bartender", "dj", "fotografo", "decorador-festas",
+    ],
+  },
+  {
+    name: "Transporte e Mudanças",
+    slug: "transporte-mudancas",
+    subcategories: [
+      "motorista-particular", "freteiro", "mudancas", "motoboy",
+    ],
+  },
+  {
+    name: "Serviços Profissionais",
+    slug: "servicos-profissionais",
+    subcategories: [
+      "contador", "advogado", "despachante", "designer-grafico",
+      "desenvolvedor-sites", "social-media",
+    ],
+  },
+  {
+    name: "Pets",
+    slug: "pets",
+    subcategories: [
+      "pet-sitter", "dog-walker", "banho-tosa", "veterinario",
+    ],
+  },
+] as const;
+
 // All service categories available in the platform
 // These must match the categories seeded in the database
 export const SERVICE_CATEGORIES = [
@@ -110,3 +198,22 @@ export const SERVICE_CATEGORIES = [
   { name: "Soldador", slug: "soldador" },
   { name: "Outros", slug: "outros" },
 ] as const;
+
+// Helper to find which group a subcategory belongs to
+export function getCategoryGroup(subcategorySlug: string) {
+  return CATEGORY_GROUPS.find((g) =>
+    (g.subcategories as readonly string[]).includes(subcategorySlug)
+  );
+}
+
+// Helper to get subcategories for a group
+export function getSubcategorySlugs(groupSlug: string): string[] {
+  const group = CATEGORY_GROUPS.find((g) => g.slug === groupSlug);
+  return group ? [...group.subcategories] : [];
+}
+
+// Helper to check if a slug is in a group's subcategories
+export function isInGroup(groupSlug: string, slug: string): boolean {
+  const group = CATEGORY_GROUPS.find((g) => g.slug === groupSlug);
+  return group ? (group.subcategories as readonly string[]).includes(slug) : false;
+}

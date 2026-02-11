@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CATEGORY_GROUPS } from "@/lib/constants";
 
 interface SearchFiltersProps {
   categories: { id: string; name: string; slug: string }[];
@@ -46,6 +49,16 @@ export function SearchFilters({
   }
 
   const hasActiveFilters = activeCategory || activeCity;
+
+  // Build grouped categories for the dropdown
+  const groupedCategories = CATEGORY_GROUPS.map((group) => ({
+    ...group,
+    items: categories.filter((c) => (group.subcategories as readonly string[]).includes(c.slug)),
+  })).filter((g) => g.items.length > 0);
+
+  // Categories that don't belong to any group
+  const allGroupedSlugs: string[] = CATEGORY_GROUPS.flatMap((g) => [...g.subcategories]);
+  const ungrouped = categories.filter((c) => !allGroupedSlugs.includes(c.slug));
 
   return (
     <div className="space-y-3">
@@ -103,7 +116,7 @@ export function SearchFilters({
             className="absolute inset-0 bg-black/40"
             onClick={() => setShowFilters(false)}
           />
-          <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-white p-5 shadow-xl">
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-white p-5 shadow-xl max-h-[80vh] overflow-y-auto">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold">Filtros</h3>
               <button
@@ -128,11 +141,30 @@ export function SearchFilters({
                   </SelectTrigger>
                   <SelectContent className="rounded-lg max-h-60">
                     <SelectItem value="all">Todas categorias</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.slug}>
-                        {cat.name}
-                      </SelectItem>
+                    {groupedCategories.map((group) => (
+                      <SelectGroup key={group.slug}>
+                        <SelectLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+                          {group.name}
+                        </SelectLabel>
+                        {group.items.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.slug} className="pl-6">
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     ))}
+                    {ungrouped.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5">
+                          Outros
+                        </SelectLabel>
+                        {ungrouped.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.slug} className="pl-6">
+                            {cat.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
