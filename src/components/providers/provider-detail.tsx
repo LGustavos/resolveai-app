@@ -20,6 +20,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ReviewCard } from "@/components/reviews/review-card";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { BusinessHoursDisplay } from "@/components/providers/business-hours-display";
+import { BusinessHours } from "@/types/database";
 import { getWhatsAppUrl } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -30,11 +33,13 @@ interface ProviderDetailProps {
     description: string;
     city: string;
     whatsapp: string;
+    is_verified?: boolean;
     user: { full_name: string; avatar_url: string | null };
     categories: { id: string; name: string; slug: string }[];
     portfolio: { id: string; image_url: string; created_at: string }[];
     average_rating: number | null;
     review_count: number;
+    business_hours?: BusinessHours[];
   };
   reviews: {
     id: string;
@@ -124,8 +129,9 @@ export function ProviderDetail({
       {/* Profile info */}
       <div className="mt-3 space-y-2.5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             {provider.user.full_name}
+            {provider.is_verified && <VerifiedBadge size="md" />}
           </h1>
           {provider.city && (
             <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -179,6 +185,13 @@ export function ProviderDetail({
           <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">
             {provider.description}
           </p>
+        </div>
+      )}
+
+      {/* Business Hours */}
+      {provider.business_hours && provider.business_hours.length > 0 && (
+        <div className="mt-4">
+          <BusinessHoursDisplay hours={provider.business_hours} />
         </div>
       )}
 
