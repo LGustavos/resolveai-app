@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { Loader2, Search as SearchIcon, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryMultiSelect } from "@/components/ui/category-multi-select";
+import { fetchCepData, geocodeAddress, formatCep } from "@/lib/cep";
+import { getDefaultBusinessHours } from "@/lib/business-hours";
 
 function formatWhatsApp(value: string): string {
   const digits = value.replace(/\D/g, "");
@@ -34,7 +36,15 @@ export default function RegisterPage() {
 
   // Provider fields
   const [description, setDescription] = useState("");
-  const [city, setCity] = useState("");
+  const [cep, setCep] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [addressInfo, setAddressInfo] = useState<{
+    city: string;
+    state: string;
+    neighborhood: string;
+    latitude: number | null;
+    longitude: number | null;
+  } | null>(null);
   const [whatsapp, setWhatsapp] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [categories, setCategories] = useState<
@@ -66,6 +76,32 @@ export default function RegisterPage() {
     setWhatsapp(formatWhatsApp(digits));
   }
 
+  async function handleCepChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value.replace(/\D/g, "").slice(0, 8);
+    setCep(formatCep(raw));
+
+    if (raw.length === 8) {
+      setCepLoading(true);
+      const data = await fetchCepData(raw);
+      if (data) {
+        const coords = await geocodeAddress(data.city, data.state, data.neighborhood);
+        setAddressInfo({
+          city: data.city,
+          state: data.state,
+          neighborhood: data.neighborhood,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
+        });
+      } else {
+        setAddressInfo(null);
+        toast.error("CEP não encontrado. Verifique e tente novamente.");
+      }
+      setCepLoading(false);
+    } else {
+      setAddressInfo(null);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -92,8 +128,8 @@ export default function RegisterPage() {
         toast.error("Selecione pelo menos uma categoria.");
         return;
       }
-      if (!city.trim()) {
-        toast.error("Informe sua cidade.");
+      if (!addressInfo) {
+        toast.error("Informe um CEP válido para localizarmos sua região.");
         return;
       }
     }
@@ -130,7 +166,12 @@ export default function RegisterPage() {
           .from("provider_profiles")
           .update({
             description,
-            city: city.trim(),
+            city: addressInfo!.city,
+            neighborhood: addressInfo!.neighborhood,
+            cep: cep.replace(/\D/g, ""),
+            state: addressInfo!.state,
+            latitude: addressInfo!.latitude,
+            longitude: addressInfo!.longitude,
             whatsapp: rawWa,
             is_active: true,
           })
@@ -144,6 +185,16 @@ export default function RegisterPage() {
             }))
           );
         }
+
+        // Auto-create default business hours
+        const defaultHours = getDefaultBusinessHours().map((h) => ({
+          provider_id: profile.id,
+          day_of_week: h.day_of_week,
+          open_time: h.is_closed ? null : h.open_time,
+          close_time: h.is_closed ? null : h.close_time,
+          is_closed: h.is_closed,
+        }));
+        await supabase.from("business_hours").insert(defaultHours);
       }
     }
 
@@ -250,8 +301,27 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="city" className="text-sm font-medium">Cidade</Label>
-                <Input id="city" placeholder="Ex: São Paulo, Campinas..." value={city} onChange={(e) => setCity(e.target.value)} className="h-11 rounded-lg border-border bg-white" />
+                <Label htmlFor="cep" className="text-sm font-medium">CEP *</Label>
+                <div className="relative">
+                  <Input
+                    id="cep"
+                    placeholder="00000-000"
+                    value={cep}
+                    onChange={handleCepChange}
+                    className="h-11 rounded-lg border-border bg-white"
+                    inputMode="numeric"
+                    maxLength={9}
+                  />
+                  {cepLoading && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                {addressInfo && (
+                  <p className="text-xs text-muted-foreground">
+                    {addressInfo.neighborhood ? `${addressInfo.neighborhood}, ` : ""}
+                    {addressInfo.city} - {addressInfo.state}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">
