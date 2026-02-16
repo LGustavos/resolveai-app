@@ -121,10 +121,6 @@ export function VerificationRequest({
 
       if (identityUploadError) throw identityUploadError;
 
-      const { data: identityUrlData } = supabase.storage
-        .from("verifications")
-        .getPublicUrl(identityPath);
-
       // Upload selfie
       const selfieExt = selfieFile.name.split(".").pop();
       const selfiePath = `${userId}/${providerId}/selfie-${Date.now()}.${selfieExt}`;
@@ -134,24 +130,20 @@ export function VerificationRequest({
 
       if (selfieUploadError) throw selfieUploadError;
 
-      const { data: selfieUrlData } = supabase.storage
-        .from("verifications")
-        .getPublicUrl(selfiePath);
-
-      // Insert verification documents
+      // Store the storage path (not public URL) since the bucket is private
       const { error: insertError } = await supabase
         .from("verification_documents")
         .insert([
           {
             provider_id: providerId,
             document_type: "identity",
-            document_url: identityUrlData.publicUrl,
+            document_url: identityPath,
             status: "pending",
           },
           {
             provider_id: providerId,
             document_type: "selfie",
-            document_url: selfieUrlData.publicUrl,
+            document_url: selfiePath,
             status: "pending",
           },
         ]);

@@ -25,6 +25,20 @@ export default async function VerificationPage() {
     .eq("provider_id", providerProfile.id)
     .order("created_at", { ascending: false });
 
+  // Generate signed URLs for existing documents (private bucket)
+  const documentsWithUrls = await Promise.all(
+    (documents ?? []).map(async (doc) => {
+      const { data } = await supabase.storage
+        .from("verifications")
+        .createSignedUrl(doc.document_url, 3600); // 1 hour expiry
+
+      return {
+        ...doc,
+        document_url: data?.signedUrl ?? doc.document_url,
+      };
+    })
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -35,7 +49,7 @@ export default async function VerificationPage() {
         providerId={providerProfile.id}
         userId={user.id}
         verificationStatus={providerProfile.verification_status ?? "none"}
-        existingDocuments={(documents ?? []) as {
+        existingDocuments={documentsWithUrls as {
           id: string;
           document_type: "identity" | "selfie";
           document_url: string;
