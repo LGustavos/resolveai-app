@@ -15,6 +15,7 @@ import {
   Star,
   Briefcase,
   ImageIcon,
+  ShieldCheck,
 } from "lucide-react";
 
 interface ProfileViewProps {
@@ -154,6 +155,23 @@ export function ProfileView({ user, providerProfile }: ProfileViewProps) {
               </div>
               <span className="text-sm font-medium">
                 Gerenciar portfólio
+              </span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </Link>
+        )}
+
+        {isProvider && (
+          <Link
+            href="/provider/verification"
+            className="flex items-center justify-between p-4 transition-colors hover:bg-muted/50"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
+                <ShieldCheck className="h-4 w-4 text-blue-500" />
+              </div>
+              <span className="text-sm font-medium">
+                Verificar perfil
               </span>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />

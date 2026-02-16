@@ -89,8 +89,10 @@ export interface BusinessHours {
 export interface ProviderWithDetails extends ProviderProfile {
   user: Pick<User, "full_name" | "avatar_url">;
   categories: Category[];
+  portfolio: PortfolioImage[];
   average_rating: number | null;
   review_count: number;
+  business_hours: BusinessHours[];
 }
 
 export interface ReviewWithClient extends Review {

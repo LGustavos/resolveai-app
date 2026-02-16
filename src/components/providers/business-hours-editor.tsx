@@ -51,25 +51,42 @@ export function BusinessHoursEditor({
     );
   }
 
+  function validate(): string | null {
+    for (const h of hours) {
+      if (h.is_closed) continue;
+      if (!h.open_time || !h.close_time) {
+        const dayName = DAYS_OF_WEEK.find((d) => d.value === h.day_of_week)!.label;
+        return `${dayName}: preencha os horários de abertura e fechamento.`;
+      }
+      if (h.close_time <= h.open_time) {
+        const dayName = DAYS_OF_WEEK.find((d) => d.value === h.day_of_week)!.label;
+        return `${dayName}: o horário de fechamento deve ser depois do de abertura.`;
+      }
+    }
+    return null;
+  }
+
   async function handleSave() {
+    const validationError = validate();
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
     setLoading(true);
 
-    // Delete existing hours
-    await supabase
-      .from("business_hours")
-      .delete()
-      .eq("provider_id", providerId);
+    const rows = hours.map((h) => ({
+      provider_id: providerId,
+      day_of_week: h.day_of_week,
+      open_time: h.is_closed ? null : h.open_time,
+      close_time: h.is_closed ? null : h.close_time,
+      is_closed: h.is_closed,
+    }));
 
-    // Insert new hours
-    const { error } = await supabase.from("business_hours").insert(
-      hours.map((h) => ({
-        provider_id: providerId,
-        day_of_week: h.day_of_week,
-        open_time: h.is_closed ? null : h.open_time,
-        close_time: h.is_closed ? null : h.close_time,
-        is_closed: h.is_closed,
-      }))
-    );
+    // Upsert to avoid data loss (uses unique constraint on provider_id + day_of_week)
+    const { error } = await supabase
+      .from("business_hours")
+      .upsert(rows, { onConflict: "provider_id,day_of_week" });
 
     if (error) {
       toast.error("Erro ao salvar horários.");
