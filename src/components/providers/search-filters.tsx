@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -14,28 +14,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CATEGORY_GROUPS } from "@/lib/constants";
+import { toast } from "sonner";
 
 interface SearchFiltersProps {
   categories: { id: string; name: string; slug: string }[];
-  cities: string[];
   activeCategory?: string;
-  activeCity?: string;
   activeOrder?: string;
   activeSearch?: string;
+  activeRadius?: string;
+  hasGeolocation?: boolean;
 }
 
 export function SearchFilters({
   categories,
-  cities,
   activeCategory,
-  activeCity,
   activeOrder,
   activeSearch,
+  activeRadius,
+  hasGeolocation,
 }: SearchFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState(activeSearch ?? "");
+  const [geoLoading, setGeoLoading] = useState(false);
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -48,7 +50,46 @@ export function SearchFilters({
     router.push(`/search?${params.toString()}`);
   }
 
-  const hasActiveFilters = activeCategory || activeCity;
+  function handleUseMyLocation() {
+    if (!navigator.geolocation) {
+      toast.error("Seu navegador não suporta geolocalização.");
+      return;
+    }
+
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("lat", position.coords.latitude.toFixed(6));
+        params.set("lng", position.coords.longitude.toFixed(6));
+        params.set("raio", activeRadius ?? "25");
+        params.delete("cidade");
+        params.delete("pagina");
+        params.set("ordenar", "distancia");
+        router.push(`/search?${params.toString()}`);
+        setGeoLoading(false);
+      },
+      () => {
+        toast.error("Não foi possível obter sua localização. Verifique as permissões do navegador.");
+        setGeoLoading(false);
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
+  }
+
+  function handleClearLocation() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("lat");
+    params.delete("lng");
+    params.delete("raio");
+    if (params.get("ordenar") === "distancia") {
+      params.delete("ordenar");
+    }
+    params.delete("pagina");
+    router.push(`/search?${params.toString()}`);
+  }
+
+  const hasActiveFilters = activeCategory || hasGeolocation;
 
   // Build grouped categories for the dropdown
   const groupedCategories = CATEGORY_GROUPS.map((group) => ({
@@ -105,6 +146,9 @@ export function SearchFilters({
           <SelectContent className="rounded-lg">
             <SelectItem value="recentes">Mais recentes</SelectItem>
             <SelectItem value="avaliacao">Melhor avaliação</SelectItem>
+            {hasGeolocation && (
+              <SelectItem value="distancia">Mais próximo</SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -169,26 +213,54 @@ export function SearchFilters({
                 </Select>
               </div>
 
+              {/* Location */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
-                  Cidade
+                  Localização
                 </label>
-                <Select
-                  value={activeCity ?? "all"}
-                  onValueChange={(v) => updateParam("cidade", v)}
-                >
-                  <SelectTrigger className="h-11 rounded-lg border-border">
-                    <SelectValue placeholder="Todas cidades" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-lg max-h-60">
-                    <SelectItem value="all">Todas cidades</SelectItem>
-                    {cities.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {hasGeolocation ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                      <MapPin className="h-4 w-4 text-primary shrink-0" />
+                      <span className="text-sm font-medium text-primary">Usando sua localização</span>
+                      <button
+                        onClick={handleClearLocation}
+                        className="ml-auto text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                    <Select
+                      value={activeRadius ?? "25"}
+                      onValueChange={(v) => updateParam("raio", v)}
+                    >
+                      <SelectTrigger className="h-11 rounded-lg border-border">
+                        <SelectValue placeholder="Raio de busca" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-lg">
+                        <SelectItem value="5">Até 5 km</SelectItem>
+                        <SelectItem value="10">Até 10 km</SelectItem>
+                        <SelectItem value="25">Até 25 km</SelectItem>
+                        <SelectItem value="50">Até 50 km</SelectItem>
+                        <SelectItem value="100">Até 100 km</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 rounded-lg border-border gap-2"
+                    onClick={handleUseMyLocation}
+                    disabled={geoLoading}
+                  >
+                    {geoLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <MapPin className="h-4 w-4" />
+                    )}
+                    Usar minha localização
+                  </Button>
+                )}
               </div>
 
               <Button

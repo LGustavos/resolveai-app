@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getActiveProviders,
   getCategories,
-  getCities,
   getCurrentUser,
   getUserFavorites,
 } from "@/lib/supabase/queries";
@@ -29,24 +28,38 @@ export default async function SearchPage({
     cidade?: string;
     ordenar?: string;
     pagina?: string;
+    lat?: string;
+    lng?: string;
+    raio?: string;
   }>;
 }) {
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.pagina ?? "1", 10) || 1);
   const supabase = await createClient();
 
-  const [{ providers, total }, categories, cities, currentUser] =
+  const latitude = params.lat ? parseFloat(params.lat) : undefined;
+  const longitude = params.lng ? parseFloat(params.lng) : undefined;
+  const radiusKm = params.raio ? parseFloat(params.raio) : undefined;
+
+  const orderByMap: Record<string, "rating" | "recent" | "distance"> = {
+    avaliacao: "rating",
+    distancia: "distance",
+  };
+
+  const [{ providers, total }, categories, currentUser] =
     await Promise.all([
       getActiveProviders(supabase, {
         search: params.q,
         categorySlug: params.categoria,
         city: params.cidade,
-        orderBy: params.ordenar === "avaliacao" ? "rating" : "recent",
+        latitude,
+        longitude,
+        radiusKm,
+        orderBy: orderByMap[params.ordenar ?? ""] ?? "recent",
         page,
         pageSize: PAGE_SIZE,
       }),
       getCategories(supabase),
-      getCities(supabase),
       getCurrentUser(supabase),
     ]);
 
@@ -63,6 +76,9 @@ export default async function SearchPage({
     if (params.categoria) sp.set("categoria", params.categoria);
     if (params.cidade) sp.set("cidade", params.cidade);
     if (params.ordenar) sp.set("ordenar", params.ordenar);
+    if (params.lat) sp.set("lat", params.lat);
+    if (params.lng) sp.set("lng", params.lng);
+    if (params.raio) sp.set("raio", params.raio);
     if (p > 1) sp.set("pagina", String(p));
     const qs = sp.toString();
     return `/search${qs ? `?${qs}` : ""}`;
@@ -74,11 +90,11 @@ export default async function SearchPage({
 
       <SearchFilters
         categories={categories}
-        cities={cities}
         activeCategory={params.categoria}
-        activeCity={params.cidade}
         activeOrder={params.ordenar}
         activeSearch={params.q}
+        activeRadius={params.raio}
+        hasGeolocation={!!(params.lat && params.lng)}
       />
 
       <p className="text-sm text-muted-foreground">

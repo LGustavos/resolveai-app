@@ -15,10 +15,12 @@ interface ProviderCardProps {
     user: { full_name: string; avatar_url: string | null };
     categories: { id: string; name: string; slug: string }[];
     city: string;
+    state?: string | null;
     average_rating: number | null;
     review_count: number;
     is_verified?: boolean;
     business_hours?: BusinessHours[];
+    distance_km?: number | null;
   };
   featured?: boolean;
   userId?: string | null;
@@ -94,10 +96,15 @@ export function ProviderCard({ provider, featured, userId, isFavorited }: Provid
                   <span>({provider.review_count})</span>
                 </span>
               )}
-              {provider.city && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {provider.city}
+              {(provider.city || provider.distance_km != null) && (
+                <span className="flex items-center gap-1 truncate">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  {provider.distance_km != null
+                    ? `${provider.distance_km < 1
+                        ? `${Math.round(provider.distance_km * 1000)}m`
+                        : `${provider.distance_km.toFixed(1)} km`
+                      }${provider.city ? ` - ${provider.city}` : ""}`
+                    : `${provider.city}${provider.state ? `/${provider.state}` : ""}`}
                 </span>
               )}
             </div>

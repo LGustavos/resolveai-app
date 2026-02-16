@@ -7,6 +7,7 @@ import {
   createProviderProfile,
   setProviderCategories,
 } from "@/lib/supabase/mutations";
+import { fetchCepData, geocodeAddress, formatCep } from "@/lib/cep";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +36,15 @@ export function BecomeProviderForm({
   const supabase = createClient();
 
   const [description, setDescription] = useState("");
-  const [city, setCity] = useState("");
+  const [cep, setCep] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [addressInfo, setAddressInfo] = useState<{
+    city: string;
+    state: string;
+    neighborhood: string;
+    latitude: number | null;
+    longitude: number | null;
+  } | null>(null);
   const [whatsapp, setWhatsapp] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,13 +54,39 @@ export function BecomeProviderForm({
     setWhatsapp(formatWhatsApp(digits));
   }
 
+  async function handleCepChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value.replace(/\D/g, "").slice(0, 8);
+    setCep(formatCep(raw));
+
+    if (raw.length === 8) {
+      setCepLoading(true);
+      const data = await fetchCepData(raw);
+      if (data) {
+        const coords = await geocodeAddress(data.city, data.state, data.neighborhood);
+        setAddressInfo({
+          city: data.city,
+          state: data.state,
+          neighborhood: data.neighborhood,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
+        });
+      } else {
+        setAddressInfo(null);
+        toast.error("CEP não encontrado. Verifique e tente novamente.");
+      }
+      setCepLoading(false);
+    } else {
+      setAddressInfo(null);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const rawWhatsapp = whatsapp.replace(/\D/g, "");
 
-    if (!city.trim()) {
-      toast.error("Informe sua cidade.");
+    if (!addressInfo) {
+      toast.error("Informe um CEP válido para localizarmos sua região.");
       return;
     }
 
@@ -74,7 +109,12 @@ export function BecomeProviderForm({
       userId,
       {
         description,
-        city: city.trim(),
+        city: addressInfo.city,
+        neighborhood: addressInfo.neighborhood,
+        cep: cep.replace(/\D/g, ""),
+        state: addressInfo.state,
+        latitude: addressInfo.latitude,
+        longitude: addressInfo.longitude,
         whatsapp: rawWhatsapp,
       }
     );
@@ -134,19 +174,32 @@ export function BecomeProviderForm({
           />
         </div>
 
-        {/* City */}
+        {/* CEP */}
         <div className="space-y-1.5">
-          <Label htmlFor="city" className="text-sm font-medium">
-            Cidade *
+          <Label htmlFor="cep" className="text-sm font-medium">
+            CEP *
           </Label>
-          <Input
-            id="city"
-            placeholder="Ex: São Paulo, Campinas..."
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="h-11 rounded-lg border-border"
-            required
-          />
+          <div className="relative">
+            <Input
+              id="cep"
+              placeholder="00000-000"
+              value={cep}
+              onChange={handleCepChange}
+              className="h-11 rounded-lg border-border"
+              inputMode="numeric"
+              maxLength={9}
+              required
+            />
+            {cepLoading && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
+          {addressInfo && (
+            <p className="text-xs text-muted-foreground">
+              {addressInfo.neighborhood ? `${addressInfo.neighborhood}, ` : ""}
+              {addressInfo.city} - {addressInfo.state}
+            </p>
+          )}
         </div>
 
         {/* WhatsApp */}

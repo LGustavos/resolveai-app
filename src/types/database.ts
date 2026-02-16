@@ -14,7 +14,12 @@ export interface ProviderProfile {
   id: string;
   user_id: string;
   description: string;
+  neighborhood: string;
   city: string;
+  cep: string | null;
+  state: string | null;
+  latitude: number | null;
+  longitude: number | null;
   whatsapp: string;
   is_active: boolean;
   is_verified: boolean;
@@ -93,6 +98,7 @@ export interface ProviderWithDetails extends ProviderProfile {
   average_rating: number | null;
   review_count: number;
   business_hours: BusinessHours[];
+  distance_km?: number | null;
 }
 
 export interface ReviewWithClient extends Review {

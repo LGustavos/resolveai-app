@@ -49,11 +49,34 @@ export async function getActiveProviders(
     search?: string;
     categorySlug?: string;
     city?: string;
-    orderBy?: "rating" | "recent";
+    latitude?: number;
+    longitude?: number;
+    radiusKm?: number;
+    orderBy?: "rating" | "recent" | "distance";
     page?: number;
     pageSize?: number;
   }
 ) {
+  // Proximity filter: get nearby provider IDs + distances via RPC
+  let nearbyMap: Map<string, number> | null = null;
+
+  if (filters?.latitude != null && filters?.longitude != null) {
+    const radius = filters.radiusKm ?? 50;
+    const { data: nearbyData } = await supabase.rpc("get_nearby_providers", {
+      lat: filters.latitude,
+      lng: filters.longitude,
+      radius_km: radius,
+    });
+
+    if (nearbyData) {
+      nearbyMap = new Map(
+        (nearbyData as { provider_id: string; distance_km: number }[]).map(
+          (r) => [r.provider_id, r.distance_km]
+        )
+      );
+    }
+  }
+
   let query = supabase
     .from("provider_profiles")
     .select(
@@ -69,7 +92,8 @@ export async function getActiveProviders(
     )
     .eq("is_active", true);
 
-  if (filters?.city) {
+  // Backward compat: city filter only when no geolocation
+  if (filters?.city && !nearbyMap) {
     query = query.eq("city", filters.city);
   }
 
@@ -95,7 +119,13 @@ export async function getActiveProviders(
         close_time: string | null;
         is_closed: boolean;
       }[],
+      distance_km: nearbyMap?.get(p.id) ?? null,
     }));
+
+  // If proximity search active, filter to only nearby providers
+  if (nearbyMap) {
+    providers = providers.filter((p) => nearbyMap!.has(p.id));
+  }
 
   // Filter by category
   if (filters?.categorySlug) {
@@ -118,7 +148,11 @@ export async function getActiveProviders(
   }
 
   // Sort
-  if (filters?.orderBy === "rating") {
+  if (filters?.orderBy === "distance" && nearbyMap) {
+    providers.sort(
+      (a, b) => (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity)
+    );
+  } else if (filters?.orderBy === "rating") {
     providers.sort(
       (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0)
     );
@@ -308,7 +342,8 @@ export async function getUserFavoriteProviders(
         categories:provider_categories(
           category:categories(*)
         ),
-        ratings:provider_ratings(average_rating, review_count)
+        ratings:provider_ratings(average_rating, review_count),
+        business_hours(*)
       )
     `
     )
@@ -330,6 +365,14 @@ export async function getUserFavoriteProviders(
         ?.average_rating ?? null,
       review_count: (p.ratings as { average_rating: number; review_count: number }[])?.[0]
         ?.review_count ?? 0,
+      business_hours: ((p.business_hours ?? []) as {
+        id: string;
+        provider_id: string;
+        day_of_week: number;
+        open_time: string | null;
+        close_time: string | null;
+        is_closed: boolean;
+      }[]),
     }));
 }
 

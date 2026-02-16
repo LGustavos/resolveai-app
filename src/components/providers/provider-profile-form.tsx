@@ -7,6 +7,7 @@ import {
   updateProviderProfile,
   setProviderCategories,
 } from "@/lib/supabase/mutations";
+import { fetchCepData, geocodeAddress, formatCep } from "@/lib/cep";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,11 @@ interface ProviderProfileFormProps {
     id: string;
     description: string;
     city: string;
+    neighborhood: string;
+    cep: string | null;
+    state: string | null;
+    latitude: number | null;
+    longitude: number | null;
     whatsapp: string;
     is_active: boolean;
     categories: { id: string; name: string; slug: string }[];
@@ -48,7 +54,25 @@ export function ProviderProfileForm({
   const supabase = createClient();
 
   const [description, setDescription] = useState(profile.description);
-  const [city, setCity] = useState(profile.city);
+  const [cep, setCep] = useState(profile.cep ? formatCep(profile.cep) : "");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [addressInfo, setAddressInfo] = useState<{
+    city: string;
+    state: string;
+    neighborhood: string;
+    latitude: number | null;
+    longitude: number | null;
+  } | null>(
+    profile.city
+      ? {
+          city: profile.city,
+          state: profile.state ?? "",
+          neighborhood: profile.neighborhood ?? "",
+          latitude: profile.latitude ?? null,
+          longitude: profile.longitude ?? null,
+        }
+      : null
+  );
   const [whatsapp, setWhatsapp] = useState(formatWhatsApp(profile.whatsapp));
   const [isActive, setIsActive] = useState(profile.is_active);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -59,6 +83,32 @@ export function ProviderProfileForm({
   function handleWhatsAppChange(e: React.ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
     setWhatsapp(formatWhatsApp(digits));
+  }
+
+  async function handleCepChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const raw = e.target.value.replace(/\D/g, "").slice(0, 8);
+    setCep(formatCep(raw));
+
+    if (raw.length === 8) {
+      setCepLoading(true);
+      const data = await fetchCepData(raw);
+      if (data) {
+        const coords = await geocodeAddress(data.city, data.state, data.neighborhood);
+        setAddressInfo({
+          city: data.city,
+          state: data.state,
+          neighborhood: data.neighborhood,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
+        });
+      } else {
+        setAddressInfo(null);
+        toast.error("CEP não encontrado. Verifique e tente novamente.");
+      }
+      setCepLoading(false);
+    } else {
+      setAddressInfo(null);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -83,7 +133,12 @@ export function ProviderProfileForm({
       profile.id,
       {
         description,
-        city: city.trim(),
+        city: addressInfo?.city ?? "",
+        neighborhood: addressInfo?.neighborhood ?? "",
+        cep: cep.replace(/\D/g, "") || undefined,
+        state: addressInfo?.state ?? undefined,
+        latitude: addressInfo?.latitude,
+        longitude: addressInfo?.longitude,
         whatsapp: rawWhatsapp,
         is_active: isActive,
       }
@@ -124,18 +179,31 @@ export function ProviderProfileForm({
           />
         </div>
 
-        {/* City */}
+        {/* CEP */}
         <div className="space-y-1.5">
-          <Label htmlFor="city" className="text-sm font-medium">
-            Cidade
+          <Label htmlFor="cep" className="text-sm font-medium">
+            CEP
           </Label>
-          <Input
-            id="city"
-            placeholder="Ex: São Paulo, Campinas..."
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="h-11 rounded-lg border-border"
-          />
+          <div className="relative">
+            <Input
+              id="cep"
+              placeholder="00000-000"
+              value={cep}
+              onChange={handleCepChange}
+              className="h-11 rounded-lg border-border"
+              inputMode="numeric"
+              maxLength={9}
+            />
+            {cepLoading && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
+          {addressInfo && (
+            <p className="text-xs text-muted-foreground">
+              {addressInfo.neighborhood ? `${addressInfo.neighborhood}, ` : ""}
+              {addressInfo.city}{addressInfo.state ? ` - ${addressInfo.state}` : ""}
+            </p>
+          )}
         </div>
 
         {/* WhatsApp */}

@@ -31,7 +31,9 @@ interface ProviderDetailProps {
   provider: {
     id: string;
     description: string;
+    neighborhood: string;
     city: string;
+    state: string | null;
     whatsapp: string;
     is_verified?: boolean;
     user: { full_name: string; avatar_url: string | null };
@@ -135,8 +137,12 @@ export function ProviderDetail({
           </h1>
           {provider.city && (
             <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5" />
-              {provider.city}
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              {[
+                provider.neighborhood,
+                provider.city,
+                provider.state,
+              ].filter(Boolean).join(", ")}
             </div>
           )}
         </div>

@@ -110,6 +110,11 @@ export async function createProviderProfile(
   data: {
     description: string;
     city: string;
+    neighborhood?: string;
+    cep?: string;
+    state?: string;
+    latitude?: number | null;
+    longitude?: number | null;
     whatsapp: string;
   }
 ) {
@@ -128,6 +133,11 @@ export async function createProviderProfile(
       user_id: userId,
       description: data.description,
       city: data.city,
+      neighborhood: data.neighborhood ?? "",
+      cep: data.cep ?? null,
+      state: data.state ?? null,
+      latitude: data.latitude ?? null,
+      longitude: data.longitude ?? null,
       whatsapp: data.whatsapp,
       is_active: true,
     })
@@ -143,6 +153,11 @@ export async function updateProviderProfile(
   data: {
     description?: string;
     city?: string;
+    neighborhood?: string;
+    cep?: string;
+    state?: string;
+    latitude?: number | null;
+    longitude?: number | null;
     whatsapp?: string;
     is_active?: boolean;
   }
