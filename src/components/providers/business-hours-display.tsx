@@ -99,7 +99,7 @@ export function BusinessHoursBadge({ hours }: { hours: BusinessHours[] }) {
           isOpen ? "bg-emerald-500" : "bg-gray-400"
         )}
       />
-      {isOpen ? "Aberto" : "Fechado"}
+      {isOpen ? "Disponível" : "Fechado"}
     </span>
   );
 }

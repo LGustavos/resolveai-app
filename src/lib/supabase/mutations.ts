@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { UserRole } from "@/types/database";
+import { getDefaultBusinessHours } from "@/lib/business-hours";
 
 // ============================================
 // AUTH MUTATIONS
@@ -144,7 +145,20 @@ export async function createProviderProfile(
     .select("id")
     .single();
 
-  return { error, profileId: profile?.id ?? null };
+  if (error || !profile) return { error, profileId: null };
+
+  // Create default business hours (Mon-Fri 08:00-18:00, Sat-Sun closed)
+  const defaultHours = getDefaultBusinessHours().map((h) => ({
+    provider_id: profile.id,
+    day_of_week: h.day_of_week,
+    open_time: h.is_closed ? null : h.open_time,
+    close_time: h.is_closed ? null : h.close_time,
+    is_closed: h.is_closed,
+  }));
+
+  await supabase.from("business_hours").insert(defaultHours);
+
+  return { error: null, profileId: profile.id };
 }
 
 export async function updateProviderProfile(

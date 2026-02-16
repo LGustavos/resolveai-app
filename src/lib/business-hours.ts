@@ -38,7 +38,7 @@ export function isProviderOpenNow(hours: BusinessHours[]): {
     currentTime >= todayHours.open_time && currentTime < todayHours.close_time;
 
   if (isOpen) {
-    return { isOpen: true, label: `Aberto até ${todayHours.close_time.slice(0, 5)}` };
+    return { isOpen: true, label: `Disponível até ${todayHours.close_time.slice(0, 5)}` };
   }
 
   if (currentTime < todayHours.open_time) {
