@@ -1,6 +1,6 @@
 {
-  "name": "ResolveAí",
-  "short_name": "ResolveAí",
+  "name": "eufaço!",
+  "short_name": "eufaço!",
   "description": "Encontre prestadores de serviços locais na sua cidade",
   "start_url": "/home",
   "display": "standalone",
@@ -25,7 +25,7 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon.svg",
+      "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

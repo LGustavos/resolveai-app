@@ -10,14 +10,18 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "ResolveAí - Serviços Locais",
+  title: "eufaço! - Serviços Locais",
   description:
     "Encontre prestadores de serviços locais na sua cidade. Pintores, eletricistas, encanadores e mais.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icons/icon-192.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "ResolveAí",
+    title: "eufaço!",
   },
 };
 

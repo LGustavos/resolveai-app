@@ -8,7 +8,7 @@ import {
 } from "@/lib/supabase/queries";
 
 export const metadata: Metadata = {
-  title: "Buscar Serviços - ResolveAí",
+  title: "Buscar Serviços - eufaço!",
   description:
     "Busque e encontre prestadores de serviços locais por categoria, cidade e avaliação.",
 };

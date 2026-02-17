@@ -90,7 +90,7 @@ export function PwaInstallPrompt() {
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold text-foreground text-sm">
-              Instalar ResolveAí
+              Instalar eufaço!
             </h4>
             {showIosBanner ? (
               <p className="mt-0.5 text-xs text-muted-foreground">

@@ -1,5 +1,5 @@
 export const WHATSAPP_DEFAULT_MESSAGE =
-  "Olá! Encontrei seu perfil no ResolveAí e gostaria de um orçamento.";
+  "Olá! Encontrei seu perfil no eufaço! e gostaria de um orçamento.";
 
 export function getWhatsAppUrl(phone: string, message?: string) {
   const cleanPhone = phone.replace(/\D/g, "");

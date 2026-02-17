@@ -57,7 +57,7 @@ export default function LoginPage() {
 			<div className='mb-6 flex flex-col items-center text-center'>
 				<h1 className='text-2xl font-bold tracking-tight'>Bem-vindo de volta</h1>
 				<p className='mt-1 text-sm text-muted-foreground'>
-					Entre para continuar no ResolveAí
+					Entre para continuar no eufaço!
 				</p>
 			</div>
 

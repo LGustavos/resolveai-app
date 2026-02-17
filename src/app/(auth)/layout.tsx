@@ -10,11 +10,11 @@ export default function AuthLayout({
 			<div className='w-full max-w-md'>
 				<div className='mb-8 flex flex-col items-center gap-2'>
 					<Image
-						src='/logo.png'
-						alt='ResolveAí'
-						width={300}
-						height={80}
-						className='h-20 w-auto'
+						src='/logo.svg'
+						alt='eufaço!'
+						width={320}
+						height={120}
+						className='h-25 w-auto'
 						priority
 					/>
 				</div>

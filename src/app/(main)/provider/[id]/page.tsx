@@ -19,7 +19,7 @@ export async function generateMetadata({
   const provider = await getProviderById(supabase, id);
 
   if (!provider) {
-    return { title: "Prestador não encontrado - ResolveAí" };
+    return { title: "Prestador não encontrado - eufaço!" };
   }
 
   const name = provider.user.full_name;
@@ -29,15 +29,15 @@ export async function generateMetadata({
     : "";
 
   return {
-    title: `${name} - ${category} | ResolveAí`,
+    title: `${name} - ${category} | eufaço!`,
     description: provider.description
       ? provider.description.slice(0, 160)
-      : `${name} - ${category} em ${provider.city || "sua cidade"}. Veja avaliações e entre em contato pelo ResolveAí.`,
+      : `${name} - ${category} em ${provider.city || "sua cidade"}. Veja avaliações e entre em contato pelo eufaço!.`,
     openGraph: {
       title: `${name} - ${category}${rating}`,
       description: provider.description
         ? provider.description.slice(0, 160)
-        : `Prestador de serviços no ResolveAí.`,
+        : `Prestador de serviços no eufaço!.`,
       type: "profile",
     },
   };

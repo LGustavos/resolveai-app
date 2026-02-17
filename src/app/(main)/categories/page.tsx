@@ -5,8 +5,8 @@ import { CategoryList } from "@/components/providers/category-list";
 import { BackButton } from "@/components/ui/back-button";
 
 export const metadata: Metadata = {
-  title: "Categorias - ResolveAí",
-  description: "Todas as categorias de serviços disponíveis no ResolveAí.",
+  title: "Categorias - eufaço!",
+  description: "Todas as categorias de serviços disponíveis no eufaço!.",
 };
 
 export default async function CategoriesPage() {

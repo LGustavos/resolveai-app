@@ -56,7 +56,7 @@ export default function ResetPasswordPage() {
           Nova senha
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Defina sua nova senha para acessar o ResolveAí
+          Defina sua nova senha para acessar o eufaço!
         </p>
       </div>
 

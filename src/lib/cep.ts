@@ -63,7 +63,7 @@ export async function geocodeAddress(
           countrycodes: "br",
         }),
       {
-        headers: { "User-Agent": "ResolveAi/1.0" },
+        headers: { "User-Agent": "eufaco/1.0" },
         signal: AbortSignal.timeout(5000),
       }
     );

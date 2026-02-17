@@ -18,7 +18,7 @@ export default function TermosPage() {
             1. Aceitação dos Termos
           </h2>
           <p>
-            Ao acessar e usar o ResolveAí, você concorda com estes Termos de
+            Ao acessar e usar o eufaço!, você concorda com estes Termos de
             Uso. Se você não concorda com qualquer parte destes termos, não
             utilize a plataforma.
           </p>
@@ -29,7 +29,7 @@ export default function TermosPage() {
             2. Descrição do Serviço
           </h2>
           <p>
-            O ResolveAí é uma plataforma que conecta clientes a prestadores de
+            O eufaço! é uma plataforma que conecta clientes a prestadores de
             serviços locais. Atuamos como intermediários na divulgação dos
             serviços, mas não somos responsáveis pela execução dos mesmos.
           </p>
@@ -70,7 +70,7 @@ export default function TermosPage() {
           <p>
             As avaliações devem refletir experiências reais. É proibido publicar
             conteúdo falso, ofensivo, discriminatório ou que viole direitos de
-            terceiros. O ResolveAí reserva-se o direito de remover avaliações
+            terceiros. O eufaço! reserva-se o direito de remover avaliações
             que violem estes termos.
           </p>
         </section>
@@ -80,7 +80,7 @@ export default function TermosPage() {
             6. Responsabilidades
           </h2>
           <p>
-            O ResolveAí não se responsabiliza pela qualidade, segurança ou
+            O eufaço! não se responsabiliza pela qualidade, segurança ou
             legalidade dos serviços oferecidos pelos prestadores. A contratação é
             feita diretamente entre cliente e prestador, cabendo a ambos as
             responsabilidades decorrentes.
@@ -93,7 +93,7 @@ export default function TermosPage() {
           </h2>
           <p>
             Todo o conteúdo da plataforma (design, textos, logotipos e código)
-            é de propriedade do ResolveAí. As imagens de portfólio são de
+            é de propriedade do eufaço!. As imagens de portfólio são de
             propriedade dos prestadores que as enviaram.
           </p>
         </section>
@@ -103,7 +103,7 @@ export default function TermosPage() {
             8. Encerramento de Conta
           </h2>
           <p>
-            O ResolveAí pode suspender ou encerrar contas que violem estes termos
+            O eufaço! pode suspender ou encerrar contas que violem estes termos
             ou que apresentem comportamento abusivo, sem aviso prévio.
           </p>
         </section>

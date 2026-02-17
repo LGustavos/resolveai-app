@@ -18,7 +18,7 @@ export default function PrivacidadePage() {
             1. Informações que Coletamos
           </h2>
           <p>
-            Ao utilizar o ResolveAí, coletamos as seguintes informações pessoais
+            Ao utilizar o eufaço!, coletamos as seguintes informações pessoais
             em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº
             13.709/2018):
           </p>

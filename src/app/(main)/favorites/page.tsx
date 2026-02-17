@@ -8,7 +8,7 @@ import { Heart } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Favoritos - ResolveAí",
+  title: "Favoritos - eufaço!",
 };
 
 export default async function FavoritesPage() {

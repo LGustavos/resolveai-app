@@ -79,8 +79,8 @@ export function ProviderDetail({
   async function handleShare() {
     const url = `${window.location.origin}/provider/${provider.id}`;
     const shareData = {
-      title: `${provider.user.full_name} - ResolveAí`,
-      text: `Confira o perfil de ${provider.user.full_name} no ResolveAí`,
+      title: `${provider.user.full_name} - eufaço!`,
+      text: `Confira o perfil de ${provider.user.full_name} no eufaço!`,
       url,
     };
 
@@ -98,20 +98,50 @@ export function ProviderDetail({
 
   return (
     <div className="pb-24">
-      {/* Blue gradient banner */}
+      {/* Profile banner */}
       <div className="relative -mx-4 -mt-6">
-        <div className="h-40 w-full bg-linear-to-br from-primary via-primary/90 to-sky-400 rounded-b-3xl">
+        <div className="h-40 w-full rounded-b-3xl overflow-hidden relative">
+          {/* Background: portfolio image or gradient */}
+          {provider.portfolio.length > 0 ? (
+            <>
+              <Image
+                src={provider.portfolio[0].image_url}
+                alt=""
+                fill
+                className="object-cover blur-sm scale-105"
+                sizes="100vw"
+                priority
+              />
+              <div className="absolute inset-0 bg-linear-to-b from-black/30 via-black/10 to-black/40" />
+            </>
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-linear-to-br from-slate-100 via-slate-50 to-slate-200" />
+              <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)", backgroundSize: "24px 24px" }} />
+            </>
+          )}
+
           {/* Back button on banner */}
           <button
             onClick={() => router.back()}
-            className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
+            className={cn(
+              "absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+              provider.portfolio.length > 0
+                ? "bg-black/20 text-white hover:bg-black/30"
+                : "bg-white/80 text-foreground hover:bg-white shadow-sm"
+            )}
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
           {/* Share button on banner */}
           <button
             onClick={handleShare}
-            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
+            className={cn(
+              "absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+              provider.portfolio.length > 0
+                ? "bg-black/20 text-white hover:bg-black/30"
+                : "bg-white/80 text-foreground hover:bg-white shadow-sm"
+            )}
           >
             <Share2 className="h-4 w-4" />
           </button>

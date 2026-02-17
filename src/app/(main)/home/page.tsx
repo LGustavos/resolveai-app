@@ -4,11 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveProviders, getCategories, getCurrentUser, getUserFavorites } from "@/lib/supabase/queries";
 
 export const metadata: Metadata = {
-  title: "ResolveAí - Encontre Serviços Locais",
+  title: "eufaço! - Encontre Serviços Locais",
   description:
     "Encontre prestadores de serviços locais na sua cidade. Pintores, eletricistas, encanadores e mais profissionais avaliados.",
   openGraph: {
-    title: "ResolveAí - Encontre Serviços Locais",
+    title: "eufaço! - Encontre Serviços Locais",
     description:
       "Encontre prestadores de serviços locais na sua cidade. Pintores, eletricistas, encanadores e mais.",
     type: "website",
