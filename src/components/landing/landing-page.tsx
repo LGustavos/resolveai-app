@@ -240,7 +240,7 @@ export function LandingPage() {
 								alt='eufaço!'
 								width={220}
 								height={80}
-								className='h-14 w-auto'
+								className='h-10 sm:h-14 w-auto'
 							/>
 						</Link>
 
@@ -263,7 +263,7 @@ export function LandingPage() {
 			</motion.header>
 
 			{/* ─── Hero Section ─────────────────────────────────────── */}
-			<div ref={heroRef} className='relative pt-16'>
+			<div ref={heroRef} className='relative pt-16 overflow-hidden'>
 				{/* Background decorations */}
 				<div className='absolute inset-0 overflow-hidden pointer-events-none'>
 					<div className='absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-primary/5 blur-3xl' />
@@ -293,7 +293,7 @@ export function LandingPage() {
 					className='relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pb-20 pt-20 sm:pt-28 lg:pt-36'>
 					<div className='grid lg:grid-cols-2 gap-12 items-center'>
 						{/* Left: Text content */}
-						<div className='text-center lg:text-left'>
+						<div className='text-center lg:text-left min-w-0'>
 							<motion.div
 								initial={{ opacity: 0, y: 30 }}
 								animate={{ opacity: 1, y: 0 }}
@@ -304,7 +304,7 @@ export function LandingPage() {
 							</motion.div>
 
 							<motion.h1
-								className='mt-6 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl'
+								className='mt-6 text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl'
 								initial={{ opacity: 0, y: 30 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ duration: 0.6, delay: 0.3 }}>
@@ -351,9 +351,9 @@ export function LandingPage() {
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ duration: 0.6, delay: 0.6 }}>
 								<Link href='/register' className='block'>
-									<div className='glass flex items-center gap-3 rounded-2xl border border-border/50 px-5 py-4 shadow-lg hover:shadow-xl transition-shadow cursor-pointer'>
-										<Search className='h-5 w-5 text-muted-foreground' />
-										<span className='text-muted-foreground'>
+									<div className='glass flex items-center gap-3 rounded-2xl border border-border/50 px-5 py-4 shadow-lg hover:shadow-xl transition-shadow cursor-pointer overflow-hidden'>
+										<Search className='h-5 w-5 text-muted-foreground shrink-0' />
+										<span className='text-muted-foreground truncate'>
 											O que você precisa? Ex: eletricista, pintor...
 										</span>
 									</div>
@@ -362,7 +362,7 @@ export function LandingPage() {
 
 							{/* Mobile: service image strip */}
 							<motion.div
-								className='mt-8 lg:hidden flex gap-3 overflow-x-auto scrollbar-none pb-2'
+								className='mt-8 lg:hidden -mx-4 px-4 flex gap-3 overflow-x-auto scrollbar-none pb-2'
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 								transition={{ delay: 0.7 }}>
