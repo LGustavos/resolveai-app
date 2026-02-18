@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 import { signInWithEmail, signInWithGoogle } from "@/lib/supabase/mutations"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
@@ -36,7 +37,14 @@ export default function LoginPage() {
 		const { error } = await signInWithEmail(supabase, email.trim(), password)
 
 		if (error) {
-			toast.error("Erro ao entrar. Verifique suas credenciais.")
+			const msg = error.message?.toLowerCase() || ""
+			if (msg.includes("email not confirmed")) {
+				toast.error("Email não confirmado. Verifique sua caixa de entrada.")
+			} else if (msg.includes("invalid login credentials")) {
+				toast.error("Email ou senha incorretos.")
+			} else {
+				toast.error("Erro ao entrar. Verifique suas credenciais.")
+			}
 			setLoading(false)
 			return
 		}
@@ -81,9 +89,8 @@ export default function LoginPage() {
 						<Label htmlFor='password' className='text-sm font-medium'>
 							Senha
 						</Label>
-						<Input
+						<PasswordInput
 							id='password'
-							type='password'
 							placeholder='Sua senha'
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}

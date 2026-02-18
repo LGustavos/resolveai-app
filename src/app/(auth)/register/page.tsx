@@ -8,6 +8,7 @@ import { signUpWithEmail, signInWithGoogle } from "@/lib/supabase/mutations";
 import { UserRole } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -145,7 +146,14 @@ export default function RegisterPage() {
     );
 
     if (error) {
-      toast.error(error.message || "Erro ao criar conta.");
+      toast.error("Erro ao criar conta.");
+      setLoading(false);
+      return;
+    }
+
+    // Supabase returns a fake user with empty identities when email already exists
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      toast.error("Este email já está cadastrado. Tente fazer login.");
       setLoading(false);
       return;
     }
@@ -287,7 +295,7 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <Label htmlFor="password" className="text-sm font-medium">Senha</Label>
-            <Input id="password" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-lg border-border" minLength={6} required />
+            <PasswordInput id="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-lg border-border" minLength={6} required />
           </div>
 
           {/* Provider-specific fields */}
