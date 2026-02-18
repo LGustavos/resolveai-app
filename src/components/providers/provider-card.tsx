@@ -37,16 +37,7 @@ export function ProviderCard({ provider, featured, userId, isFavorited }: Provid
 
   return (
     <Link href={`/provider/${provider.id}`} className="block">
-      <div className="relative overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-shadow hover:shadow-md">
-        {userId !== undefined && (
-          <div className="absolute top-2 right-2 z-10">
-            <FavoriteButton
-              providerId={provider.id}
-              userId={userId}
-              isFavorited={isFavorited ?? false}
-            />
-          </div>
-        )}
+      <div className="relative h-full overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-shadow hover:shadow-md">
         <div className="flex gap-3 p-3">
           {/* Square avatar */}
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
@@ -70,10 +61,22 @@ export function ProviderCard({ provider, featured, userId, isFavorited }: Provid
 
           {/* Info */}
           <div className="flex flex-1 flex-col justify-center min-w-0">
-            <h3 className="font-semibold text-foreground leading-tight truncate flex items-center gap-1">
-              {provider.user.full_name}
-              {provider.is_verified && <VerifiedBadge size="sm" />}
-            </h3>
+            <div className="flex items-start gap-1">
+              <h3 className="font-semibold text-foreground leading-tight truncate">
+                {provider.user.full_name}
+              </h3>
+              {provider.is_verified && <VerifiedBadge size="sm" className="shrink-0 mt-0.5" />}
+              {userId !== undefined && (
+                <div className="ml-auto shrink-0">
+                  <FavoriteButton
+                    providerId={provider.id}
+                    userId={userId}
+                    isFavorited={isFavorited ?? false}
+                    className="h-7 w-7"
+                  />
+                </div>
+              )}
+            </div>
 
             {provider.categories.length > 0 && (
               <div className="mt-1">

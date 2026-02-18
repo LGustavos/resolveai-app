@@ -32,6 +32,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<UserRole>("CLIENT");
   const [loading, setLoading] = useState(false);
 
@@ -116,6 +117,10 @@ export default function RegisterPage() {
     }
     if (password.length < 6) {
       toast.error("A senha deve ter no mínimo 6 caracteres.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("As senhas não coincidem.");
       return;
     }
 
@@ -296,6 +301,11 @@ export default function RegisterPage() {
           <div className="space-y-1.5">
             <Label htmlFor="password" className="text-sm font-medium">Senha</Label>
             <PasswordInput id="password" placeholder="Mínimo 6 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 rounded-lg border-border" minLength={6} required />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirmar senha</Label>
+            <PasswordInput id="confirmPassword" placeholder="Digite a senha novamente" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-11 rounded-lg border-border" minLength={6} required />
           </div>
 
           {/* Provider-specific fields */}

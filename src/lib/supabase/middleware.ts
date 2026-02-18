@@ -36,7 +36,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/login", "/register", "/callback", "/forgot-password", "/reset-password"];
+  const publicRoutes = ["/login", "/register", "/callback", "/forgot-password", "/reset-password", "/auth"];
   const sharedRoutes = ["/terms", "/privacy"];
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
@@ -63,7 +63,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // If user is authenticated and trying to access auth routes, redirect to home
-  if (user && isPublicRoute && pathname !== "/callback") {
+  if (user && isPublicRoute && pathname !== "/callback" && !pathname.startsWith("/auth")) {
     const url = request.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);
