@@ -63,7 +63,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // If user is authenticated and trying to access auth routes, redirect to home
-  if (user && isPublicRoute && pathname !== "/callback" && !pathname.startsWith("/auth")) {
+  if (user && isPublicRoute && pathname !== "/callback" && !pathname.startsWith("/auth") && pathname !== "/reset-password") {
     const url = request.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);
