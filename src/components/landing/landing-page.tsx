@@ -240,10 +240,9 @@ function HeroItem({
 // ─── Main Component ─────────────────────────────────────────────────
 export function LandingPage() {
 	const [scrolled, setScrolled] = useState(false)
-	const [mounted, setMounted] = useState(false)
+	const [mounted] = useState(true)
 
 	useEffect(() => {
-		setMounted(true)
 		const handleScroll = () => setScrolled(window.scrollY > 20)
 		window.addEventListener("scroll", handleScroll, { passive: true })
 		return () => window.removeEventListener("scroll", handleScroll)
@@ -811,7 +810,7 @@ export function LandingPage() {
 											Quero contratar
 										</Button>
 									</Link>
-									<Link href='/register'>
+									<Link href='/providers'>
 										<Button
 											size='lg'
 											className='bg-white/10 border border-white/20 text-white hover:bg-white/20 text-base px-8 h-12 rounded-xl gap-2 group shadow-xs'>
