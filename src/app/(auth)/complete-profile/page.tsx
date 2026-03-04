@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { createProviderProfile, setProviderCategories, createCustomCategory } from "@/lib/supabase/mutations";
+import { createProviderProfile, setProviderCategories, createCustomCategory, acceptTerms } from "@/lib/supabase/mutations";
 import { UserRole } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { Loader2, Search as SearchIcon, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategoryMultiSelect } from "@/components/ui/category-multi-select";
 import { fetchCepData, geocodeAddress, formatCep } from "@/lib/cep";
+import Link from "next/link";
 
 function formatWhatsApp(value: string): string {
   const digits = value.replace(/\D/g, "");
@@ -49,6 +50,7 @@ export default function CompleteProfilePage() {
   >([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [autoSubmitting, setAutoSubmitting] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -127,6 +129,7 @@ export default function CompleteProfilePage() {
 
       if (existingProfile && existingProfile.whatsapp) {
         // Profile already populated by DB trigger - just clean up metadata and redirect
+        await acceptTerms(supabase, uid);
         await supabase.auth.updateUser({ data: { provider_data: null } });
         toast.success("Perfil configurado com sucesso!");
         router.push("/home");
@@ -233,8 +236,15 @@ export default function CompleteProfilePage() {
 
     setLoading(true);
 
+    // Save terms acceptance
+    const { error: termsError } = await acceptTerms(supabase, userId);
+    if (termsError) {
+      toast.error("Erro ao aceitar os termos. Tente novamente.");
+      setLoading(false);
+      return;
+    }
+
     if (role === "CLIENT") {
-      // CLIENT role is already the default from the trigger, just redirect
       router.push("/home");
       router.refresh();
       return;
@@ -409,7 +419,23 @@ export default function CompleteProfilePage() {
             </div>
           )}
 
-          <Button type="submit" className="w-full h-11 rounded-lg font-semibold gradient-bg" disabled={loading}>
+          <label htmlFor="acceptTerms" className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              id="acceptTerms"
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-border accent-primary shrink-0"
+            />
+            <span className="text-xs text-muted-foreground leading-relaxed">
+              Li e aceito os{" "}
+              <Link href="/terms" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>{" "}
+              e a{" "}
+              <Link href="/privacy" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>.
+            </span>
+          </label>
+
+          <Button type="submit" className="w-full h-11 rounded-lg font-semibold gradient-bg" disabled={loading || !acceptedTerms}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continuar"}
           </Button>
         </form>

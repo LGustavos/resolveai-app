@@ -6,6 +6,7 @@ export interface User {
   full_name: string;
   avatar_url: string | null;
   role: UserRole;
+  accepted_terms_at: string | null;
   created_at: string;
   updated_at: string;
 }

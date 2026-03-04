@@ -31,6 +31,7 @@ export async function signUpWithEmail(
       data: {
         full_name: fullName,
         role,
+        accepted_terms_at: new Date().toISOString(),
         ...(providerData ? { provider_data: providerData } : {}),
       },
     },
@@ -81,6 +82,17 @@ export async function updateUser(
   const { error } = await supabase
     .from("users")
     .update({ ...data, updated_at: new Date().toISOString() })
+    .eq("id", userId);
+  return { error };
+}
+
+export async function acceptTerms(
+  supabase: SupabaseClient,
+  userId: string
+) {
+  const { error } = await supabase
+    .from("users")
+    .update({ accepted_terms_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("id", userId);
   return { error };
 }

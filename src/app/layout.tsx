@@ -12,7 +12,11 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "eufaço! - Serviços Locais",
+  metadataBase: new URL("https://eufacooservico.com.br"),
+  title: {
+    default: "eufaço! - Serviços Locais",
+    template: "%s | eufaço!",
+  },
   description:
     "Encontre prestadores de serviços locais na sua cidade. Pintores, eletricistas, encanadores e mais.",
   manifest: "/manifest.json",
@@ -24,6 +28,14 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "eufaço!",
+  },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "eufaço!",
+  },
+  twitter: {
+    card: "summary_large_image",
   },
 };
 
@@ -117,6 +129,26 @@ export default function RootLayout({
           }}
         />
         <GoogleAnalytics />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "eufaço!",
+              url: "https://eufacooservico.com.br",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate:
+                    "https://eufacooservico.com.br/search?q={search_term_string}",
+                },
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
         {children}
         <LazyPwaPrompt />
         <Toaster position="top-center" richColors closeButton />

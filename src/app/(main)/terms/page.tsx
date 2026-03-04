@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Termos de Uso",
+  description:
+    "Termos de uso da plataforma eufaço!. Leia os termos e condições para uso dos nossos serviços.",
+};
+
 export default function TermosPage() {
   return (
     <div className="space-y-4">
@@ -5,7 +13,7 @@ export default function TermosPage() {
 
       <div className="rounded-xl border border-border bg-white p-6 space-y-5 text-sm text-muted-foreground leading-relaxed">
         <p className="text-xs text-muted-foreground">
-          Última atualização: Janeiro de 2026
+          Última atualização: Março de 2026
         </p>
 
         <section className="space-y-2">
@@ -72,13 +80,36 @@ export default function TermosPage() {
 
         <section className="space-y-2">
           <h2 className="text-base font-semibold text-foreground">
-            6. Responsabilidades
+            6. Natureza da Plataforma e Responsabilidades
           </h2>
           <p>
-            O eufaço! não se responsabiliza pela qualidade, segurança ou
-            legalidade dos serviços oferecidos pelos prestadores. A contratação é
-            feita diretamente entre cliente e prestador, cabendo a ambos as
-            responsabilidades decorrentes.
+            O eufaço! é <strong className="text-foreground">exclusivamente um catálogo digital</strong> de
+            prestadores de serviços. A plataforma tem como única função facilitar
+            a divulgação e a descoberta de profissionais, sem qualquer
+            participação na negociação, execução ou supervisão dos serviços.
+          </p>
+          <p>
+            <strong className="text-foreground">Não existe vínculo</strong> empregatício, de representação,
+            de parceria ou de intermediação ativa entre o eufaço! e os
+            prestadores ou clientes cadastrados.
+          </p>
+          <p>
+            O contato e a contratação são realizados{" "}
+            <strong className="text-foreground">diretamente entre as partes</strong>, por meio dos
+            canais de comunicação disponibilizados no perfil do prestador
+            (ex.: WhatsApp). O eufaço!{" "}
+            <strong className="text-foreground">não se responsabiliza</strong> por:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Qualidade, prazo ou resultado dos serviços prestados;</li>
+            <li>Acordos financeiros, preços ou formas de pagamento;</li>
+            <li>Danos materiais, morais ou de qualquer natureza decorrentes da relação entre cliente e prestador;</li>
+            <li>Veracidade das informações fornecidas pelos usuários em seus perfis;</li>
+            <li>Eventuais disputas, prejuízos ou conflitos entre as partes.</li>
+          </ul>
+          <p>
+            Ao utilizar a plataforma, você reconhece e aceita que toda e
+            qualquer decisão de contratação é de sua exclusiva responsabilidade.
           </p>
         </section>
 

@@ -139,11 +139,6 @@ export function SearchFilters({
     navigate(`/search?${params.toString()}`);
   }
 
-  function handleClearAutoLocation() {
-    document.cookie = `${LOCATION_COOKIE_NAME}=; path=/; max-age=0`;
-    router.refresh();
-  }
-
   function handleCitySelect(city: string) {
     const value = serializeLocationCookie({ type: "city", city });
     document.cookie = `${LOCATION_COOKIE_NAME}=${value}; path=/; max-age=${LOCATION_COOKIE_MAX_AGE}; samesite=lax`;
@@ -280,15 +275,6 @@ export function SearchFilters({
             {autoLocationLabel}
           </button>
         )}
-        {!hasGeolocation && autoLocationLabel && (
-          <button
-            onClick={handleClearAutoLocation}
-            className="flex items-center gap-1 rounded-full border border-border px-2.5 h-7 text-xs text-muted-foreground hover:bg-muted transition-colors shrink-0"
-          >
-            <X className="h-3 w-3" />
-          </button>
-        )}
-
         {/* Active search chip */}
         {activeSearch && (
           <button

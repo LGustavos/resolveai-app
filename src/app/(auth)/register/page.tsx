@@ -39,6 +39,7 @@ function RegisterPageContent() {
     providerSignup ? "PROVIDER" : "CLIENT"
   );
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Provider fields
   const [description, setDescription] = useState("");
@@ -356,14 +357,23 @@ function RegisterPageContent() {
                 <PasswordInput id="confirmPassword" placeholder="Digite a senha novamente" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-11 rounded-lg border-border" minLength={6} required />
               </div>
 
-              <p className="text-xs text-muted-foreground text-center">
-                Ao criar uma conta, você concorda com os{" "}
-                <Link href="/terms" className="text-primary hover:underline">Termos de Uso</Link>{" "}
-                e a{" "}
-                <Link href="/privacy" className="text-primary hover:underline">Política de Privacidade</Link>.
-              </p>
+              <label htmlFor="acceptTerms" className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  id="acceptTerms"
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-primary shrink-0"
+                />
+                <span className="text-xs text-muted-foreground leading-relaxed">
+                  Li e aceito os{" "}
+                  <Link href="/terms" target="_blank" className="text-primary hover:underline">Termos de Uso</Link>{" "}
+                  e a{" "}
+                  <Link href="/privacy" target="_blank" className="text-primary hover:underline">Política de Privacidade</Link>.
+                </span>
+              </label>
 
-              <Button type="submit" className="w-full h-11 rounded-lg font-semibold gradient-bg" disabled={loading}>
+              <Button type="submit" className="w-full h-11 rounded-lg font-semibold gradient-bg" disabled={loading || !acceptedTerms}>
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : role === "PROVIDER" ? (

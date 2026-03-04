@@ -69,12 +69,19 @@ export default async function HomePage({
 		getCities(supabase),
 		getCurrentUser(supabase)
 	])
-	const providers = providersResult.providers
 	const total = providersResult.total
 
 	const favoriteIds = currentUser
 		? await getUserFavorites(supabase, currentUser.id)
 		: []
+
+	// Sort favorited providers first
+	const favoriteSet = new Set(favoriteIds)
+	const providers = providersResult.providers.sort((a, b) => {
+		const aFav = favoriteSet.has(a.id) ? 1 : 0
+		const bFav = favoriteSet.has(b.id) ? 1 : 0
+		return bFav - aFav
+	})
 
 	const isLocationFiltered = !!location
 
@@ -82,11 +89,14 @@ export default async function HomePage({
 		<div className='space-y-6'>
 			<LocationGate cities={cities} />
 
-			<HomeHero />
-
-			{isLocationFiltered && (
-				<LocationChip cities={cities} currentLocation={location} />
-			)}
+			<div className="space-y-3">
+				{isLocationFiltered && (
+					<div className="flex justify-center">
+						<LocationChip cities={cities} currentLocation={location} />
+					</div>
+				)}
+				<HomeHero locationLabel={location?.type === "geo" ? location.label : location?.type === "city" ? location.city : undefined} />
+			</div>
 
 			<AdBanner />
 

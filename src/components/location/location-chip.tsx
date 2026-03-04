@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, X, Search, Navigation } from "lucide-react";
+import { MapPin, Search, Navigation } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,11 +33,6 @@ export function LocationChip({ cities, currentLocation }: LocationChipProps) {
     currentLocation.type === "geo"
       ? currentLocation.label
       : currentLocation.city;
-
-  function handleClear() {
-    document.cookie = `${LOCATION_COOKIE_NAME}=; path=/; max-age=0`;
-    router.refresh();
-  }
 
   function handleCitySelect(city: string) {
     const value = serializeLocationCookie({ type: "city", city });
@@ -73,22 +68,13 @@ export function LocationChip({ cities, currentLocation }: LocationChipProps) {
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => setShowCitySelector(true)}
-          className="flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 h-8 text-xs font-medium text-primary hover:bg-primary/15 transition-colors"
-        >
-          <MapPin className="h-3 w-3" />
-          {label}
-        </button>
-        <button
-          onClick={handleClear}
-          className="flex items-center gap-1 rounded-full border border-border px-2.5 h-7 text-xs text-muted-foreground hover:bg-muted transition-colors"
-        >
-          <X className="h-3 w-3" />
-          Limpar
-        </button>
-      </div>
+      <button
+        onClick={() => setShowCitySelector(true)}
+        className="flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 h-8 text-xs font-medium text-primary hover:bg-primary/15 transition-colors"
+      >
+        <MapPin className="h-3 w-3" />
+        {label}
+      </button>
 
       <Dialog open={showCitySelector} onOpenChange={setShowCitySelector}>
         <DialogContent className="max-w-sm">

@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useTransition } from "react"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
-import { signInWithEmail, signInWithGoogle } from "@/lib/supabase/mutations"
+import { signInWithGoogle } from "@/lib/supabase/mutations"
+import { signInAction } from "@/lib/supabase/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PasswordInput } from "@/components/ui/password-input"
@@ -13,11 +13,10 @@ import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
-	const router = useRouter()
 	const supabase = createClient()
 	const [email, setEmail] = useState("")
 	const [password, setPassword] = useState("")
-	const [loading, setLoading] = useState(false)
+	const [isPending, startTransition] = useTransition()
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault()
@@ -32,25 +31,20 @@ export default function LoginPage() {
 			return
 		}
 
-		setLoading(true)
+		startTransition(async () => {
+			const result = await signInAction(email.trim(), password)
 
-		const { error } = await signInWithEmail(supabase, email.trim(), password)
-
-		if (error) {
-			const msg = error.message?.toLowerCase() || ""
-			if (msg.includes("email not confirmed")) {
-				toast.error("Email não confirmado. Verifique sua caixa de entrada.")
-			} else if (msg.includes("invalid login credentials")) {
-				toast.error("Email ou senha incorretos.")
-			} else {
-				toast.error("Erro ao entrar. Verifique suas credenciais.")
+			if (result?.error) {
+				const msg = result.error.toLowerCase()
+				if (msg.includes("email not confirmed")) {
+					toast.error("Email não confirmado. Verifique sua caixa de entrada.")
+				} else if (msg.includes("invalid login credentials")) {
+					toast.error("Email ou senha incorretos.")
+				} else {
+					toast.error("Erro ao entrar. Verifique suas credenciais.")
+				}
 			}
-			setLoading(false)
-			return
-		}
-
-		router.push("/home")
-		router.refresh()
+		})
 	}
 
 	async function handleGoogleLogin() {
@@ -110,8 +104,8 @@ export default function LoginPage() {
 					<Button
 						type='submit'
 						className='w-full h-11 rounded-lg font-semibold gradient-bg'
-						disabled={loading}>
-						{loading ? <Loader2 className='h-4 w-4 animate-spin' /> : "Entrar"}
+						disabled={isPending}>
+						{isPending ? <Loader2 className='h-4 w-4 animate-spin' /> : "Entrar"}
 					</Button>
 				</form>
 

@@ -99,6 +99,14 @@ export default async function SearchPage({
     ? await getUserFavorites(supabase, currentUser.id)
     : [];
 
+  // Sort favorited providers first
+  const favoriteSet = new Set(favoriteIds);
+  providers.sort((a, b) => {
+    const aFav = favoriteSet.has(a.id) ? 1 : 0;
+    const bFav = favoriteSet.has(b.id) ? 1 : 0;
+    return bFav - aFav;
+  });
+
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   // Build pagination URL helper

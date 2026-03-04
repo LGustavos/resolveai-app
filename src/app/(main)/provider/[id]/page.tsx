@@ -70,8 +70,39 @@ export default async function ProviderPage({
     ? await hasUserReviewedProvider(supabase, id, currentUser.id)
     : true;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: provider.user.full_name,
+    description: provider.description || undefined,
+    image: provider.portfolio?.[0]?.image_url ?? provider.user.avatar_url ?? undefined,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: provider.city || undefined,
+      addressRegion: provider.state || undefined,
+      addressCountry: "BR",
+    },
+    url: `https://eufacooservico.com.br/provider/${id}`,
+    ...(provider.categories.length > 0 && {
+      category: provider.categories.map((c: { name: string }) => c.name).join(", "),
+    }),
+    ...(provider.average_rating && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: provider.average_rating,
+        reviewCount: provider.review_count,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replaceAll("</", "<\\/") }}
+      />
       <TrackView providerId={id} />
       <ProviderDetail
         provider={provider}

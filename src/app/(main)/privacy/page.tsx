@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Política de Privacidade",
+  description:
+    "Política de privacidade da plataforma eufaço!. Saiba como coletamos, usamos e protegemos seus dados.",
+};
+
 export default function PrivacidadePage() {
   return (
     <div className="space-y-4">

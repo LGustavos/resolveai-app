@@ -95,12 +95,20 @@ export function ProviderLoadMore({
 			}
 
 			const result = await res.json()
-			setProviders((prev) => [
-				...prev,
-				...result.providers.filter(
-					(provider: Provider) => !prev.some((current) => current.id === provider.id)
-				)
-			])
+			const favSet = new Set(favoriteIds)
+			setProviders((prev) => {
+				const merged = [
+					...prev,
+					...result.providers.filter(
+						(provider: Provider) => !prev.some((current) => current.id === provider.id)
+					)
+				]
+				return merged.sort((a, b) => {
+					const aFav = favSet.has(a.id) ? 1 : 0
+					const bFav = favSet.has(b.id) ? 1 : 0
+					return bFav - aFav
+				})
+			})
 			setPage(nextPage)
 		} catch (error) {
 			console.error(error)

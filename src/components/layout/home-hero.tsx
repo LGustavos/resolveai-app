@@ -4,7 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
-export function HomeHero() {
+interface HomeHeroProps {
+  locationLabel?: string;
+}
+
+export function HomeHero({ locationLabel }: HomeHeroProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -19,13 +23,15 @@ export function HomeHero() {
 
   return (
     <div className="space-y-4">
-      <div>
+      <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight">
           Encontre o profissional{" "}
           <span className="text-primary">ideal</span>
         </h1>
         <p className="text-sm text-muted-foreground">
-          Conecte-se com os melhores prestadores da sua região
+          {locationLabel
+            ? <>Conecte-se com os melhores prestadores em <span className="font-medium text-foreground">{locationLabel}</span></>
+            : "Conecte-se com os melhores prestadores da sua região"}
         </p>
       </div>
 
