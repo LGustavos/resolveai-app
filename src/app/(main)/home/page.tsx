@@ -89,13 +89,21 @@ export default async function HomePage({
 		<div className='space-y-6'>
 			<LocationGate cities={cities} />
 
-			<div className="space-y-3">
+			<div className='space-y-3'>
 				{isLocationFiltered && (
-					<div className="flex justify-center">
+					<div className='flex justify-center'>
 						<LocationChip cities={cities} currentLocation={location} />
 					</div>
 				)}
-				<HomeHero locationLabel={location?.type === "geo" ? location.label : location?.type === "city" ? location.city : undefined} />
+				<HomeHero
+					locationLabel={
+						location?.type === "geo"
+							? location.label
+							: location?.type === "city"
+								? location.city
+								: undefined
+					}
+				/>
 			</div>
 
 			<AdBanner />
@@ -106,7 +114,7 @@ export default async function HomePage({
 				<ProviderListLoading>
 					{/* All providers */}
 					<div>
-						<h2 className='mb-3 text-lg font-semibold'>Profissionais</h2>
+						<h2 className='mb-3 text-lg font-semibold'>Profissionais ({total})</h2>
 						{providers.length === 0 ? (
 							<div className='flex flex-col items-center py-12 text-center'>
 								<div className='mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-muted'>

@@ -11,9 +11,10 @@ import { useCategoryPending } from "@/components/providers/category-pending"
 interface CategoryFilterProps {
 	activeSlug?: string
 	limit?: number
+	totalCount?: number
 }
 
-export function CategoryFilter({ activeSlug, limit }: CategoryFilterProps) {
+export function CategoryFilter({ activeSlug, limit, totalCount }: CategoryFilterProps) {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const { startNavigation } = useCategoryPending()
@@ -22,6 +23,12 @@ export function CategoryFilter({ activeSlug, limit }: CategoryFilterProps) {
 		? CATEGORY_GROUPS.slice(0, limit)
 		: CATEGORY_GROUPS
 
+	const categoriesCount =
+		totalCount ??
+		CATEGORY_GROUPS.reduce(
+			(count, group) => count + 1 + group.subcategories.length,
+			0
+		)
 	const isAllActive = !activeSlug
 
 	function isGroupActive(groupSlug: string) {
@@ -55,7 +62,7 @@ export function CategoryFilter({ activeSlug, limit }: CategoryFilterProps) {
 
 	return (
 		<div>
-			<h2 className='mb-3 text-lg font-semibold'>Categorias</h2>
+			<h2 className='mb-3 text-lg font-semibold'>Categorias ({categoriesCount})</h2>
 			<div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
 				{/* "Todas" card */}
 				<button
