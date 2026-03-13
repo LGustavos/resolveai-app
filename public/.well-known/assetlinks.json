@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "br.com.eufacooservico.twa",
+      "sha256_cert_fingerprints": [
+        "24:9B:2D:FB:0A:52:EC:E2:94:57:E2:88:CB:91:51:F8:BE:85:26:5B:31:04:3B:28:F1:7B:1C:72:47:A4:B7:FA"
+      ]
+    }
+  }
+]

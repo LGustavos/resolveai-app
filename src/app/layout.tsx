@@ -54,6 +54,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var standalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;var twa=document.referrer&&document.referrer.startsWith("android-app://");if(standalone||twa){document.documentElement.classList.add("app-shell")}}catch(_){}})();`,
+          }}
+        />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <Script
           defer
@@ -115,6 +120,7 @@ export default function RootLayout({
         <style
           dangerouslySetInnerHTML={{
             __html: [
+              ".app-shell #splash{display:flex!important}",
               "@media(display-mode:standalone){#splash{display:flex!important}}",
               "@keyframes splash-logo{from{opacity:0;transform:translateY(16px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}",
               "@keyframes splash-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.04);opacity:0.85}}",
