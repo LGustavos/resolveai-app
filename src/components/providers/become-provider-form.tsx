@@ -8,6 +8,7 @@ import {
   setProviderCategories,
 } from "@/lib/supabase/mutations";
 import { fetchCepData, geocodeAddress, formatCep } from "@/lib/cep";
+import { isValidCpf, formatCpf } from "@/lib/cpf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,10 +46,16 @@ export function BecomeProviderForm({
     latitude: number | null;
     longitude: number | null;
   } | null>(null);
+  const [cpf, setCpf] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [instagram, setInstagram] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
+  function handleCpfChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+    setCpf(formatCpf(digits));
+  }
 
   function handleWhatsAppChange(e: React.ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
@@ -84,7 +91,13 @@ export function BecomeProviderForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    const rawCpf = cpf.replace(/\D/g, "");
     const rawWhatsapp = whatsapp.replace(/\D/g, "");
+
+    if (!rawCpf || !isValidCpf(rawCpf)) {
+      toast.error("CPF inválido. Verifique o número informado.");
+      return;
+    }
 
     if (!addressInfo) {
       toast.error("Informe um CEP válido para localizarmos sua região.");
@@ -117,6 +130,7 @@ export function BecomeProviderForm({
         latitude: addressInfo.latitude,
         longitude: addressInfo.longitude,
         whatsapp: rawWhatsapp,
+        cpf: rawCpf,
         instagram: instagram || undefined,
       }
     );
@@ -202,6 +216,23 @@ export function BecomeProviderForm({
               {addressInfo.city} - {addressInfo.state}
             </p>
           )}
+        </div>
+
+        {/* CPF */}
+        <div className="space-y-1.5">
+          <Label htmlFor="cpf" className="text-sm font-medium">
+            CPF *
+          </Label>
+          <Input
+            id="cpf"
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChange={handleCpfChange}
+            className="h-11 rounded-lg border-border"
+            inputMode="numeric"
+            maxLength={14}
+            required
+          />
         </div>
 
         {/* WhatsApp */}

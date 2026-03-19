@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Camera,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,6 +27,14 @@ import { BusinessHours } from "@/types/database";
 import { getWhatsAppUrl } from "@/lib/constants";
 import { isProviderOpenNow } from "@/lib/business-hours";
 import { trackWhatsAppClick } from "@/app/(main)/provider/[id]/actions";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface ProviderDetailProps {
@@ -66,6 +75,7 @@ export function ProviderDetail({
   const REVIEWS_PER_PAGE = 5;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [visibleReviewCount, setVisibleReviewCount] = useState(REVIEWS_PER_PAGE);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const touchStartX = useRef<number>(0);
 
   function handleTouchStart(e: React.TouchEvent) {
@@ -192,26 +202,45 @@ export function ProviderDetail({
       </div>
 
       {/* ======== STATS ======== */}
-      <div className="mt-5 grid grid-cols-3 gap-2">
-        <div className="flex flex-col items-center rounded-xl bg-muted/50 py-3">
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-            <span className="text-lg font-bold">{provider.average_rating ?? "-"}</span>
+      {currentUser ? (
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          <div className="flex flex-col items-center rounded-xl bg-muted/50 py-3">
+            <div className="flex items-center gap-1">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              <span className="text-lg font-bold">{provider.average_rating ?? "-"}</span>
+            </div>
+            <span className="text-[11px] text-muted-foreground">Nota</span>
           </div>
-          <span className="text-[11px] text-muted-foreground">Nota</span>
-        </div>
-        <div className="flex flex-col items-center rounded-xl bg-muted/50 py-3">
-          <span className="text-lg font-bold">{provider.review_count}</span>
-          <span className="text-[11px] text-muted-foreground">Avaliações</span>
-        </div>
-        <div className="flex flex-col items-center rounded-xl bg-muted/50 py-3">
-          <div className="flex items-center gap-1">
-            <Camera className="h-4 w-4 text-muted-foreground" />
-            <span className="text-lg font-bold">{provider.portfolio.length}</span>
+          <div className="flex flex-col items-center rounded-xl bg-muted/50 py-3">
+            <span className="text-lg font-bold">{provider.review_count}</span>
+            <span className="text-[11px] text-muted-foreground">Avaliações</span>
           </div>
-          <span className="text-[11px] text-muted-foreground">Fotos</span>
+          <div className="flex flex-col items-center rounded-xl bg-muted/50 py-3">
+            <div className="flex items-center gap-1">
+              <Camera className="h-4 w-4 text-muted-foreground" />
+              <span className="text-lg font-bold">{provider.portfolio.length}</span>
+            </div>
+            <span className="text-[11px] text-muted-foreground">Fotos</span>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <div className="flex flex-col items-center rounded-xl bg-muted/50 py-3">
+            <div className="flex items-center gap-1">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-lg font-bold text-muted-foreground">-</span>
+            </div>
+            <span className="text-[11px] text-muted-foreground">Nota</span>
+          </div>
+          <div className="flex flex-col items-center rounded-xl bg-muted/50 py-3">
+            <div className="flex items-center gap-1">
+              <Camera className="h-4 w-4 text-muted-foreground" />
+              <span className="text-lg font-bold">{provider.portfolio.length}</span>
+            </div>
+            <span className="text-[11px] text-muted-foreground">Fotos</span>
+          </div>
+        </div>
+      )}
 
       {/* ======== ABOUT ======== */}
       {provider.description && (
@@ -270,79 +299,83 @@ export function ProviderDetail({
         )}
       </section>
 
-      {/* ======== REVIEWS (sempre visível) ======== */}
+      {/* ======== REVIEWS ======== */}
       <section className="mt-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
             Avaliações
           </h2>
-          {canReview ? (
+          {canReview && (
             <Link href={`/provider/${provider.id}/review`}>
               <Button size="sm" className="rounded-lg font-medium gradient-bg h-8 text-xs">
                 Avaliar
               </Button>
             </Link>
-          ) : !currentUser ? (
-            <Button
-              size="sm"
-              className="rounded-lg font-medium gradient-bg h-8 text-xs"
-              onClick={() =>
-                toast(
-                  <div className="text-sm">
-                    <p>Para avaliar, você precisa ter uma conta.</p>
-                    <div className="mt-2 flex gap-3">
-                      <a href="/register" className="font-semibold text-primary hover:underline">Criar conta</a>
-                      <a href="/login" className="font-semibold text-primary hover:underline">Entrar</a>
-                    </div>
-                  </div>
-                )
-              }
-            >
-              Avaliar
-            </Button>
-          ) : null}
+          )}
         </div>
 
-        {/* Rating summary */}
-        {provider.review_count > 0 && (
-          <div className="flex items-center gap-3 mb-3 p-3 rounded-xl bg-muted/50">
-            <div className="flex items-center gap-1.5">
-              <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-              <span className="text-2xl font-bold">{provider.average_rating}</span>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">{provider.review_count}</span> avaliações
-            </div>
-          </div>
-        )}
-
-        {reviews.length === 0 ? (
+        {!currentUser ? (
           <div className="flex flex-col items-center py-8 text-center rounded-xl bg-muted/30 border border-dashed border-border">
-            <MessageSquare className="h-8 w-8 text-muted-foreground/40 mb-2" />
-            <p className="text-xs text-muted-foreground">
-              Nenhuma avaliação ainda. Seja o primeiro!
+            <Lock className="h-8 w-8 text-muted-foreground/40 mb-2" />
+            <p className="text-sm font-medium text-foreground">
+              Avaliações disponíveis para cadastrados
             </p>
+            <p className="text-xs text-muted-foreground mt-1 mb-3">
+              Crie sua conta para ver as avaliações e a nota deste profissional
+            </p>
+            <div className="flex gap-2">
+              <Button asChild size="sm" className="rounded-lg gradient-bg h-8 text-xs">
+                <Link href="/register">Criar conta grátis</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline" className="rounded-lg h-8 text-xs">
+                <Link href="/login">Entrar</Link>
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="space-y-2">
-            {reviews.slice(0, visibleReviewCount).map((review) => (
-              <ReviewCard
-                key={review.id}
-                review={review}
-                canReply={isOwnProfile}
-                providerId={provider.id}
-              />
-            ))}
-            {visibleReviewCount < reviews.length && (
-              <button
-                onClick={() => setVisibleReviewCount((prev) => prev + REVIEWS_PER_PAGE)}
-                className="w-full rounded-lg border border-border py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
-              >
-                Ver mais avaliações ({reviews.length - visibleReviewCount} restantes)
-              </button>
+          <>
+            {/* Rating summary */}
+            {provider.review_count > 0 && (
+              <div className="flex items-center gap-3 mb-3 p-3 rounded-xl bg-muted/50">
+                <div className="flex items-center gap-1.5">
+                  <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
+                  <span className="text-2xl font-bold">{provider.average_rating}</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">{provider.review_count}</span> avaliações
+                </div>
+              </div>
             )}
-          </div>
+
+            {reviews.length === 0 ? (
+              <div className="flex flex-col items-center py-8 text-center rounded-xl bg-muted/30 border border-dashed border-border">
+                <MessageSquare className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                <p className="text-xs text-muted-foreground">
+                  Nenhuma avaliação ainda. Seja o primeiro!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {reviews.slice(0, visibleReviewCount).map((review) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    canReply={isOwnProfile}
+                    providerId={provider.id}
+                  />
+                ))}
+                {visibleReviewCount < reviews.length && (
+                  <button
+                    onClick={() => setVisibleReviewCount((prev) => prev + REVIEWS_PER_PAGE)}
+                    className="w-full rounded-lg border border-border py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    Ver mais avaliações ({reviews.length - visibleReviewCount} restantes)
+                  </button>
+                )}
+              </div>
+            )}
+          </>
         )}
       </section>
 
@@ -409,33 +442,56 @@ export function ProviderDetail({
       )}
 
       {/* ======== FIXED CTA ======== */}
-      {provider.whatsapp && (
-        <div className="fixed bottom-20 left-0 right-0 z-40 px-4 md:bottom-6">
-          <div className="mx-auto flex max-w-5xl gap-2">
-            <Button
-              onClick={() => {
-                trackWhatsAppClick(provider.id);
-                window.open(
-                  getWhatsAppUrl(provider.whatsapp, provider.user.full_name),
-                  "_blank",
-                  "noopener,noreferrer"
-                );
-              }}
-              className="flex-1 h-12 rounded-xl gap-2.5 bg-emerald-500 text-white font-semibold text-base shadow-lg hover:bg-emerald-600 transition-colors"
-            >
-              <MessageCircle className="h-5 w-5" />
-              Chamar no WhatsApp
-            </Button>
-            <Button
-              onClick={handleShare}
-              variant="outline"
-              className="h-12 w-12 shrink-0 rounded-xl border-border shadow-lg bg-card"
-            >
-              <Share2 className="h-5 w-5" />
-            </Button>
-          </div>
+      <div className="fixed bottom-20 left-0 right-0 z-40 px-4 md:bottom-6">
+        <div className="mx-auto flex max-w-5xl gap-2">
+          <Button
+            onClick={() => {
+              if (!currentUser) {
+                setShowLoginDialog(true);
+                return;
+              }
+              trackWhatsAppClick(provider.id);
+              window.open(
+                getWhatsAppUrl(provider.whatsapp, provider.user.full_name),
+                "_blank",
+                "noopener,noreferrer"
+              );
+            }}
+            className="flex-1 h-12 rounded-xl gap-2.5 bg-emerald-500 text-white font-semibold text-base shadow-lg hover:bg-emerald-600 transition-colors"
+          >
+            <MessageCircle className="h-5 w-5" />
+            Chamar no WhatsApp
+          </Button>
+          <Button
+            onClick={handleShare}
+            variant="outline"
+            className="h-12 w-12 shrink-0 rounded-xl border-border shadow-lg bg-card"
+          >
+            <Share2 className="h-5 w-5" />
+          </Button>
         </div>
-      )}
+      </div>
+
+      {/* ======== LOGIN DIALOG ======== */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Entre para ver o contato</DialogTitle>
+            <DialogDescription>
+              Para acessar o WhatsApp de {provider.user.full_name}, você precisa
+              ter uma conta no eufaço!
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button asChild className="w-full gradient-bg">
+              <Link href="/register">Criar conta grátis</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Já tenho conta</Link>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -112,8 +112,32 @@ export function BusinessHoursEditor({
               key={day.day_of_week}
               className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3"
             >
-              <div className="w-12 shrink-0">
-                <span className="text-sm font-medium">{dayInfo.short}</span>
+              <div className="flex items-center gap-3">
+                <div className="w-12 shrink-0">
+                  <span className="text-sm font-medium">{dayInfo.short}</span>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={!day.is_closed}
+                  onClick={() => updateDay(day.day_of_week, "is_closed", !day.is_closed)}
+                  className={cn(
+                    "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+                    !day.is_closed ? "bg-primary" : "bg-border"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform",
+                      !day.is_closed && "translate-x-4"
+                    )}
+                  />
+                </button>
+
+                {day.is_closed && (
+                  <span className="text-sm text-muted-foreground">Fechado</span>
+                )}
               </div>
 
               <button
@@ -155,7 +179,7 @@ export function BusinessHoursEditor({
                   />
                 </div>
               ) : (
-                <span className="text-sm text-muted-foreground">Fechado</span>
+                <div className="text-sm text-muted-foreground">Sem horário</div>
               )}
             </div>
           );

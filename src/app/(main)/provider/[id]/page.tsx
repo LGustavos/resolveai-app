@@ -105,8 +105,13 @@ export default async function ProviderPage({
       />
       <TrackView providerId={id} />
       <ProviderDetail
-        provider={provider}
-        reviews={reviews}
+        provider={{
+          ...provider,
+          whatsapp: currentUser ? provider.whatsapp : "",
+          average_rating: currentUser ? provider.average_rating : null,
+          review_count: currentUser ? provider.review_count : 0,
+        }}
+        reviews={currentUser ? reviews : []}
         currentUser={currentUser}
         alreadyReviewed={alreadyReviewed}
       />

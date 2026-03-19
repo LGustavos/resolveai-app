@@ -27,5 +27,8 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const result = await getActiveProviders(supabase, { ...filters, page, pageSize });
 
-  return NextResponse.json({ providers: result.providers, total: result.total });
+  // Remove WhatsApp from public API — contact info requires authentication
+  const sanitizedProviders = result.providers.map(({ whatsapp, ...rest }) => rest);
+
+  return NextResponse.json({ providers: sanitizedProviders, total: result.total });
 }

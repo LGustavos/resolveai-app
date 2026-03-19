@@ -73,7 +73,9 @@ create table public.reviews (
 -- ============================================
 
 -- View for provider average rating
-create or replace view public.provider_ratings as
+create or replace view public.provider_ratings
+  with (security_invoker = true)
+as
 select
   provider_id,
   round(avg(rating)::numeric, 1) as average_rating,

@@ -145,6 +145,7 @@ export async function createProviderProfile(
     latitude?: number | null;
     longitude?: number | null;
     whatsapp: string;
+    cpf?: string;
     instagram?: string;
   }
 ) {
@@ -171,6 +172,7 @@ export async function createProviderProfile(
         latitude: data.latitude ?? null,
         longitude: data.longitude ?? null,
         whatsapp: data.whatsapp,
+        cpf: data.cpf ?? null,
         instagram: data.instagram ?? null,
         is_active: true,
       },
@@ -216,6 +218,7 @@ export async function updateProviderProfile(
     latitude?: number | null;
     longitude?: number | null;
     whatsapp?: string;
+    cpf?: string | null;
     instagram?: string | null;
     is_active?: boolean;
   }

@@ -9,6 +9,7 @@ import {
   createCustomCategory,
 } from "@/lib/supabase/mutations";
 import { fetchCepData, geocodeAddress, formatCep } from "@/lib/cep";
+import { isValidCpf, formatCpf } from "@/lib/cpf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,7 @@ interface ProviderProfileFormProps {
     latitude: number | null;
     longitude: number | null;
     whatsapp: string;
+    cpf: string | null;
     instagram: string | null;
     is_active: boolean;
     categories: { id: string; name: string; slug: string }[];
@@ -77,6 +79,7 @@ export function ProviderProfileForm({
       : null
   );
   const [whatsapp, setWhatsapp] = useState(formatWhatsApp(profile.whatsapp));
+  const [cpf, setCpf] = useState(profile.cpf ? formatCpf(profile.cpf) : "");
   const [instagram, setInstagram] = useState(profile.instagram ?? "");
   const [isActive, setIsActive] = useState(profile.is_active);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -94,6 +97,11 @@ export function ProviderProfileForm({
       [...prev, data].sort((a, b) => a.name.localeCompare(b.name))
     );
     return data;
+  }
+
+  function handleCpfChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+    setCpf(formatCpf(digits));
   }
 
   function handleWhatsAppChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -130,7 +138,13 @@ export function ProviderProfileForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    const rawCpf = cpf.replace(/\D/g, "");
     const rawWhatsapp = unformatWhatsApp(whatsapp);
+
+    if (rawCpf && !isValidCpf(rawCpf)) {
+      toast.error("CPF inválido. Verifique o número informado.");
+      return;
+    }
 
     if (rawWhatsapp && (rawWhatsapp.length < 10 || rawWhatsapp.length > 11)) {
       toast.error("WhatsApp inválido. Informe DDD + número (10 ou 11 dígitos).");
@@ -156,6 +170,7 @@ export function ProviderProfileForm({
         latitude: addressInfo?.latitude,
         longitude: addressInfo?.longitude,
         whatsapp: rawWhatsapp,
+        cpf: rawCpf || null,
         instagram: instagram || null,
         is_active: isActive,
       }
@@ -221,6 +236,22 @@ export function ProviderProfileForm({
               {addressInfo.city}{addressInfo.state ? ` - ${addressInfo.state}` : ""}
             </p>
           )}
+        </div>
+
+        {/* CPF */}
+        <div className="space-y-1.5">
+          <Label htmlFor="cpf" className="text-sm font-medium">
+            CPF
+          </Label>
+          <Input
+            id="cpf"
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChange={handleCpfChange}
+            className="h-11 rounded-lg border-border"
+            inputMode="numeric"
+            maxLength={14}
+          />
         </div>
 
         {/* WhatsApp */}
