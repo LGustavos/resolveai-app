@@ -14,16 +14,20 @@ export default async function MainLayout({
   const supabase = await createClient();
   const user = await getCurrentUser(supabase);
 
-  // Check if provider needs to fill CPF
+  // Check if provider needs to fill CPF/CNPJ
   let pendingCpfProfileId: string | null = null;
-  if (user && user.role === "PROVIDER") {
+  if (user) {
     const { data: profile } = await supabase
       .from("provider_profiles")
       .select("id, cpf")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (profile && profile.cpf === "PENDING") {
+    const rawDocument = profile?.cpf?.replace(/\D/g, "") ?? "";
+    const hasValidDocumentLength = rawDocument.length === 11 || rawDocument.length === 14;
+    const isPlaceholder = (profile?.cpf ?? "").toUpperCase().startsWith("PENDING");
+
+    if (profile && (isPlaceholder || !hasValidDocumentLength)) {
       pendingCpfProfileId = profile.id;
     }
   }
