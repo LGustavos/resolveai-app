@@ -205,6 +205,7 @@ function RegisterPageContent() {
         ? {
             description,
             cpf: document.replace(/\D/g, ""),
+            provider_type: providerType,
             whatsapp: whatsapp.replace(/\D/g, ""),
             cep: cep.replace(/\D/g, ""),
             city: addressInfo!.city,

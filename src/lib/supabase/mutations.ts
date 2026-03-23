@@ -16,6 +16,7 @@ export async function signUpWithEmail(
   providerData?: {
     description: string;
     cpf: string;
+    provider_type?: "individual" | "company";
     whatsapp: string;
     cep: string;
     city: string;
@@ -152,6 +153,14 @@ export async function createProviderProfile(
     instagram?: string;
   }
 ) {
+  const rawDocument = (data.cpf ?? "").replace(/\D/g, "");
+  const resolvedCpf =
+    rawDocument.length === 11 || rawDocument.length === 14
+      ? rawDocument
+      : `PENDING-${userId}`;
+  const resolvedProviderType =
+    data.provider_type ?? (rawDocument.length === 14 ? "company" : "individual");
+
   // Update user role to PROVIDER
   // Note: this triggers `on_user_role_change` which creates a minimal provider_profiles row.
   const { error: roleError } = await supabase
@@ -175,8 +184,8 @@ export async function createProviderProfile(
         latitude: data.latitude ?? null,
         longitude: data.longitude ?? null,
         whatsapp: data.whatsapp,
-        cpf: data.cpf ?? null,
-        provider_type: data.provider_type ?? "individual",
+        cpf: resolvedCpf,
+        provider_type: resolvedProviderType,
         instagram: data.instagram ?? null,
         is_active: true,
       },

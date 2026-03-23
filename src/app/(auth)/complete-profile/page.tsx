@@ -71,6 +71,14 @@ export default function CompleteProfilePage() {
       if (providerData) {
         setRole("PROVIDER");
         setDescription(providerData.description ?? "");
+        if (providerData.cpf) {
+          setDocument(providerData.cpf);
+        }
+        if (providerData.provider_type === "individual" || providerData.provider_type === "company") {
+          setProviderType(providerData.provider_type);
+        } else if ((providerData.cpf ?? "").replace(/\D/g, "").length === 14) {
+          setProviderType("company");
+        }
         setWhatsapp(formatWhatsApp(providerData.whatsapp ?? ""));
         setCep(formatCep(providerData.cep ?? ""));
         setSelectedCategories(providerData.categoryIds ?? []);
@@ -115,6 +123,8 @@ export default function CompleteProfilePage() {
 
   async function autoCompleteProfile(uid: string, providerData: {
     description?: string;
+    cpf?: string;
+    provider_type?: "individual" | "company";
     whatsapp: string;
     cep?: string;
     city: string;
@@ -145,6 +155,8 @@ export default function CompleteProfilePage() {
       // Fallback: populate profile via client-side upsert
       const { error, profileId } = await createProviderProfile(supabase, uid, {
         description: providerData.description ?? "",
+        cpf: providerData.cpf ?? "",
+        provider_type: providerData.provider_type,
         city: providerData.city,
         neighborhood: providerData.neighborhood ?? "",
         cep: providerData.cep ?? "",
@@ -267,6 +279,7 @@ export default function CompleteProfilePage() {
     const { error, profileId } = await createProviderProfile(supabase, userId, {
       description,
       cpf: document.replace(/\D/g, ""),
+      provider_type: providerType,
       city: addressInfo!.city,
       neighborhood: addressInfo!.neighborhood,
       cep: cep.replace(/\D/g, ""),
