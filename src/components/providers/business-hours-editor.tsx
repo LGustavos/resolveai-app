@@ -140,24 +140,6 @@ export function BusinessHoursEditor({
                 )}
               </div>
 
-              <button
-                type="button"
-                role="switch"
-                aria-checked={!day.is_closed}
-                onClick={() => updateDay(day.day_of_week, "is_closed", !day.is_closed)}
-                className={cn(
-                  "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-                  !day.is_closed ? "bg-primary" : "bg-border"
-                )}
-              >
-                <span
-                  className={cn(
-                    "absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform",
-                    !day.is_closed && "translate-x-4"
-                  )}
-                />
-              </button>
-
               {!day.is_closed ? (
                 <div className="grid min-w-0 basis-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:flex-1 sm:basis-auto">
                   <input
