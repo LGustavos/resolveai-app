@@ -1,10 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import {
   ArrowRight,
   BriefcaseBusiness,
   CheckCircle2,
-  Clock3,
   Hammer,
   HelpCircle,
   MessageCircle,
@@ -16,53 +19,109 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
+import { PainPointsSection } from "@/components/landing/pain-points-section";
 import { ProviderFaqAccordion } from "@/components/landing/provider-faq-accordion";
+import { SocialProofSection } from "@/components/landing/social-proof-section";
 import { Button } from "@/components/ui/button";
+
+type CopyVariant = "a" | "b";
+
+type ProviderLandingPageProps = {
+  headlineVariant?: CopyVariant;
+  ctaVariant?: CopyVariant;
+};
+
+const registerHref = "/register?role=provider&source=providers";
 
 const ctaBackground =
   "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=400&fit=crop&crop=center&q=60";
 
-const steps = [
-  {
-    number: "01",
-    title: "Crie sua conta",
-    description:
-      "Entre com seus dados e defina seu perfil como prestador em um fluxo direto.",
+const heroVariants = {
+  a: {
+    title:
+      "Pare de depender de indicação: receba clientes todos os dias na sua cidade",
+    subtitle:
+      "Clientes estão procurando seu serviço AGORA. Cadastre-se e comece a receber contatos no WhatsApp.",
   },
-  {
-    number: "02",
-    title: "Complete seu perfil",
-    description:
-      "Adicione WhatsApp, CEP, categorias e uma descrição clara do que você faz.",
+  b: {
+    title:
+      "Seu serviço não pode ficar invisível: apareça para clientes da sua cidade hoje",
+    subtitle:
+      "Tem gente buscando profissional neste momento. Entre agora e comece a receber mensagens no WhatsApp.",
   },
-  {
-    number: "03",
-    title: "Comece a receber contatos",
-    description:
-      "Seu perfil fica pronto para aparecer nas buscas e gerar novas oportunidades.",
+} satisfies Record<CopyVariant, { title: string; subtitle: string }>;
+
+const ctaVariants = {
+  a: {
+    top: "Quero receber clientes",
+    hero: "Quero receber clientes",
+    middle: "Começar a receber contatos",
+    benefits: "Quero aparecer para clientes",
+    final: "Quero receber clientes",
   },
+  b: {
+    top: "Começar a receber contatos",
+    hero: "Começar a receber contatos",
+    middle: "Quero aparecer para clientes",
+    benefits: "Quero receber clientes",
+    final: "Começar a receber contatos",
+  },
+} satisfies Record<
+  CopyVariant,
+  {
+    top: string;
+    hero: string;
+    middle: string;
+    benefits: string;
+    final: string;
+  }
+>;
+
+const heroHighlights = [
+  "Cadastro rápido e grátis",
+  "Contato direto no WhatsApp",
+  "Quem entra primeiro aparece mais",
 ];
 
-const proofItems = [
+const resultBenefits = [
   {
-    icon: Sparkles,
-    title: "Cadastro grátis",
-    description: "Entre rápido, sem custo para começar.",
+    icon: Search,
+    title: "Apareça para clientes que já estão procurando seu serviço",
+    description: "Sua visibilidade aumenta para quem quer contratar agora.",
   },
   {
     icon: MessageCircle,
-    title: "Contato direto",
-    description: "Receba mensagens no seu WhatsApp.",
+    title: "Receba pedidos no WhatsApp sem intermediários",
+    description: "Conversa rápida, resposta direta e mais chance de fechar.",
+  },
+  {
+    icon: Sparkles,
+    title: "Construa autoridade local com um perfil profissional",
+    description:
+      "Passe mais confiança para clientes que comparam vários prestadores.",
   },
   {
     icon: BriefcaseBusiness,
-    title: "Perfil profissional",
-    description: "Categorias, descrição e portfólio no mesmo lugar.",
+    title: "Mantenha sua agenda com mais demanda durante a semana",
+    description: "Tenha um canal extra para reduzir dias com pouca demanda.",
+  },
+];
+
+const steps = [
+  {
+    number: "01",
+    title: "Crie seu perfil (leva 1 minuto)",
+    description: "Preencha os dados principais e deixe seu contato pronto.",
   },
   {
-    icon: Clock3,
-    title: "Edite quando quiser",
-    description: "Atualize seu perfil conforme seu negócio cresce.",
+    number: "02",
+    title: "Apareça para clientes da sua cidade",
+    description: "Seu perfil entra nas buscas de quem precisa do seu serviço.",
+  },
+  {
+    number: "03",
+    title: "Receba mensagens no WhatsApp",
+    description: "Negocie direto com o cliente e feche serviços mais rápido.",
   },
 ];
 
@@ -81,17 +140,17 @@ const faqs = [
   {
     question: "Preciso pagar para criar meu perfil?",
     answer:
-      "Não. O objetivo desta página é levar o prestador para um cadastro simples e rápido, sem custo para começar.",
+      "Não. O cadastro é grátis para começar. Você cria seu perfil e pode ajustar quando quiser.",
   },
   {
     question: "Quanto tempo leva para entrar?",
     answer:
-      "Se você já tiver seus dados em mãos, o cadastro leva poucos minutos. Depois, você pode completar e melhorar o perfil quando quiser.",
+      "Em cerca de 1 minuto você já publica o básico. Depois pode completar com mais detalhes.",
   },
   {
     question: "Como o cliente fala comigo?",
     answer:
-      "O contato acontece direto no seu WhatsApp. Isso reduz fricção e aumenta a chance de fechar serviços mais rápido.",
+      "O contato chega direto no seu WhatsApp. Sem intermediários e com resposta mais rápida.",
   },
 ];
 
@@ -108,12 +167,141 @@ function SectionDivider() {
   );
 }
 
-export function ProviderLandingPage() {
+function Section({
+  children,
+  className = "",
+  id,
+}: {
+  children: ReactNode;
+  className?: string;
+  id?: string;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <section
+      ref={ref}
+      id={id}
+      className={`transition-all duration-700 ease-out ${
+        visible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+      } ${className}`}
+    >
+      {children}
+    </section>
+  );
+}
+
+function RevealBlock({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        visible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function HeroItem({
+  children,
+  className = "",
+  delay,
+  mounted,
+}: {
+  children: ReactNode;
+  className?: string;
+  delay: number;
+  mounted: boolean;
+}) {
+  return (
+    <div
+      className={`transition-all duration-500 ease-out ${
+        mounted ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      } ${className}`}
+      style={{ transitionDelay: mounted ? `${delay}ms` : "0ms" }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function ProviderLandingPage({
+  headlineVariant = "a",
+  ctaVariant = "a",
+}: ProviderLandingPageProps) {
+  const heroCopy = heroVariants[headlineVariant];
+  const ctaCopy = ctaVariants[ctaVariant];
+  const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       <div className="absolute inset-x-0 top-0 -z-10 h-[560px] bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.18),transparent_42%),radial-gradient(circle_at_top_left,rgba(6,182,212,0.12),transparent_36%)]" />
 
-      <header className="fixed top-0 left-0 right-0 z-30 glass border-b border-border/50 shadow-sm">
+      <header
+        className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 animate-[slide-down_0.5s_ease-out_both] ${
+          scrolled ? "glass border-b border-border/50 shadow-sm" : "bg-transparent"
+        }`}
+      >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -122,7 +310,7 @@ export function ProviderLandingPage() {
               alt="eufaço!"
               width={132}
               height={48}
-              className="h-10 sm:h-14 w-auto"
+              className="h-10 w-auto sm:h-14"
             />
             <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary sm:inline-flex">
               Para prestadores
@@ -144,12 +332,12 @@ export function ProviderLandingPage() {
                 Entrar
               </Button>
             </Link>
-            <Link href="/register?role=provider&source=providers">
+            <Link href={registerHref}>
               <Button
                 size="sm"
                 className="gradient-bg rounded-xl border-0 px-4 text-white shadow-[0_12px_30px_rgba(14,165,233,0.28)] hover:brightness-105"
               >
-                Criar perfil
+                {ctaCopy.top}
               </Button>
             </Link>
           </div>
@@ -159,11 +347,11 @@ export function ProviderLandingPage() {
       <main>
         <section className="relative overflow-hidden px-4 pb-16 pt-28 sm:px-6 sm:pb-24 sm:pt-36 lg:px-8">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute top-32 left-[10%] animate-float opacity-[0.08]">
+            <div className="absolute left-[10%] top-32 animate-float opacity-[0.08]">
               <Zap className="h-16 w-16 text-primary" />
             </div>
             <div
-              className="absolute top-48 right-[12%] animate-float-slow opacity-[0.08]"
+              className="absolute right-[12%] top-48 animate-float-slow opacity-[0.08]"
               style={{ animationDelay: "1s" }}
             >
               <Paintbrush className="h-14 w-14 text-primary" />
@@ -175,13 +363,13 @@ export function ProviderLandingPage() {
               <Wrench className="h-12 w-12 text-primary" />
             </div>
             <div
-              className="absolute top-64 left-[75%] animate-float opacity-[0.06]"
+              className="absolute left-[75%] top-64 animate-float opacity-[0.06]"
               style={{ animationDelay: "3s" }}
             >
               <Scissors className="h-12 w-12 text-primary" />
             </div>
             <div
-              className="absolute right-[25%] bottom-40 animate-float-slow opacity-[0.07]"
+              className="absolute bottom-40 right-[25%] animate-float-slow opacity-[0.07]"
               style={{ animationDelay: "0.5s" }}
             >
               <Hammer className="h-14 w-14 text-primary" />
@@ -190,68 +378,86 @@ export function ProviderLandingPage() {
 
           <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/90 px-4 py-2 text-sm font-medium text-primary shadow-sm">
-                <Sparkles className="h-4 w-4" />
-                Feito para quem quer captar clientes locais
-              </div>
+              <HeroItem delay={200} mounted={mounted}>
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/90 px-4 py-2 text-sm font-medium text-primary shadow-sm">
+                  <Sparkles className="h-4 w-4" />
+                  Feito para captar clientes locais todos os dias
+                </div>
+              </HeroItem>
 
-              <h1 className="mt-6 max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                Receba novos clientes na sua região sem depender só de rede
-                social
-              </h1>
+              <HeroItem delay={300} mounted={mounted}>
+                <h1 className="mt-6 max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                  {heroCopy.title}
+                </h1>
+              </HeroItem>
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
-                Crie seu perfil, apareça nas buscas do app e receba contatos
-                direto no WhatsApp. Você ganha um canal extra para atrair
-                clientes e fechar serviços mais rápido.
-              </p>
+              <HeroItem delay={400} mounted={mounted}>
+                <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
+                  {heroCopy.subtitle}
+                </p>
+              </HeroItem>
 
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Link href="/register?role=provider&source=providers">
-                  <Button
-                    size="lg"
-                    className="gradient-bg h-[52px] w-full rounded-2xl border-0 px-8 text-base font-semibold text-white shadow-[0_18px_40px_rgba(14,165,233,0.3)] hover:brightness-105 sm:w-auto"
-                  >
-                    Criar perfil grátis
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="#como-funciona">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="h-[52px] w-full rounded-2xl border-primary/20 bg-white px-8 text-base text-primary hover:bg-primary/5 sm:w-auto"
-                  >
-                    Ver como funciona
-                  </Button>
-                </Link>
-              </div>
+              <HeroItem delay={500} mounted={mounted}>
+                <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                  <Link href={registerHref}>
+                    <Button
+                      size="lg"
+                      className="gradient-bg h-[52px] w-full rounded-2xl border-0 px-8 text-base font-semibold text-white shadow-[0_18px_40px_rgba(14,165,233,0.3)] hover:brightness-105 sm:w-auto"
+                    >
+                      {ctaCopy.hero}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="#como-funciona">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="h-[52px] w-full rounded-2xl border-primary/20 bg-white px-8 text-base text-primary hover:bg-primary/5 sm:w-auto"
+                    >
+                      Ver como funciona
+                    </Button>
+                  </Link>
+                </div>
+              </HeroItem>
 
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {proofItems.map((item) => (
-                  <div
-                    key={item.title}
-                    className="glass flex items-center gap-3 rounded-2xl border border-border/50 px-4 py-3 shadow-sm"
-                  >
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm font-medium text-slate-700">
-                      {item.title}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <HeroItem delay={600} mounted={mounted}>
+                <p className="mt-4 text-sm font-semibold text-primary">
+                  Cadastre-se agora e saia na frente na sua cidade.
+                </p>
+              </HeroItem>
+
+              <HeroItem delay={700} mounted={mounted}>
+                <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                  {heroHighlights.map((item) => (
+                    <div
+                      key={item}
+                      className="glass flex items-center gap-3 rounded-2xl border border-border/50 px-4 py-3 shadow-sm"
+                    >
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
+                      <span className="text-sm font-medium text-slate-700">
+                        {item}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </HeroItem>
             </div>
 
-            <div className="relative flex justify-center">
-              <div className="relative w-[280px] h-[560px] rounded-[3rem] border-[8px] border-slate-800 bg-slate-900 shadow-2xl overflow-hidden">
-                <div className="h-full bg-background rounded-[2.2rem] overflow-hidden p-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="h-8 w-8 rounded-lg gradient-bg" />
-                    <div className="h-3 w-20 bg-muted rounded" />
+            <div
+              className={`relative flex justify-center transition-all duration-700 ease-out ${
+                mounted ? "scale-100 opacity-100" : "scale-90 opacity-0"
+              }`}
+              style={{ transitionDelay: mounted ? "400ms" : "0ms" }}
+            >
+              <div className="relative h-[560px] w-[280px] overflow-hidden rounded-[3rem] border-[8px] border-slate-800 bg-slate-900 shadow-2xl">
+                <div className="h-full overflow-hidden rounded-[2.2rem] bg-background p-4">
+                  <div className="mb-4 flex items-center gap-2">
+                    <div className="gradient-bg h-8 w-8 rounded-lg" />
+                    <div className="h-3 w-20 rounded bg-muted" />
                   </div>
-                  <div className="glass rounded-xl p-3 mb-3 flex items-center gap-2 border border-border/50">
+                  <div className="glass mb-3 flex items-center gap-2 rounded-xl border border-border/50 p-3">
                     <Search className="h-4 w-4 text-muted-foreground" />
-                    <div className="h-2.5 w-24 bg-muted rounded" />
+                    <div className="h-2.5 w-24 rounded bg-muted" />
                   </div>
                   {[
                     "photo-1621905251189-08b45d6a269e",
@@ -260,7 +466,16 @@ export function ProviderLandingPage() {
                   ].map((id, index) => (
                     <div
                       key={index}
-                      className="mb-2.5 flex items-center gap-3 rounded-xl border border-border/50 glass p-2.5"
+                      className={`glass mb-2.5 flex items-center gap-3 rounded-xl border border-border/50 p-2.5 transition-all duration-500 ease-out ${
+                        mounted
+                          ? "translate-x-0 opacity-100"
+                          : "translate-x-5 opacity-0"
+                      }`}
+                      style={{
+                        transitionDelay: mounted
+                          ? `${800 + index * 200}ms`
+                          : "0ms",
+                      }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -276,7 +491,7 @@ export function ProviderLandingPage() {
                         <div className="h-2 w-14 rounded bg-muted" />
                       </div>
                       <div className="flex gap-0.5">
-                        {[...Array(5)].map((_, starIndex) => (
+                        {Array.from({ length: 5 }).map((_, starIndex) => (
                           <Star
                             key={starIndex}
                             className="h-2.5 w-2.5 fill-amber-400 text-amber-400"
@@ -292,29 +507,29 @@ export function ProviderLandingPage() {
                 </div>
               </div>
 
-              <div className="absolute -top-4 -left-16 hidden rounded-xl border border-border/50 glass p-3 shadow-lg lg:block">
+              <div className="absolute -left-16 -top-4 hidden rounded-xl border border-border/50 glass p-3 shadow-lg animate-[badge-float_4s_ease-in-out_infinite] lg:block">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                   <span className="whitespace-nowrap text-xs font-semibold">
-                    Profissional verificado
+                    Profissional em destaque
                   </span>
                 </div>
               </div>
 
-              <div className="absolute -right-16 bottom-20 hidden rounded-xl border border-border/50 glass p-3 shadow-lg lg:block">
+              <div className="absolute -right-16 bottom-20 hidden rounded-xl border border-border/50 glass p-3 shadow-lg animate-[badge-float-alt_5s_ease-in-out_1s_infinite] lg:block">
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                   <span className="whitespace-nowrap text-xs font-semibold">
-                    4.9 avaliações
+                    Média 4.9 de avaliação
                   </span>
                 </div>
               </div>
 
-              <div className="absolute top-1/2 -right-24 hidden rounded-xl border border-border/50 glass p-3 shadow-lg lg:block">
+              <div className="absolute -right-24 top-1/2 hidden rounded-xl border border-border/50 glass p-3 shadow-lg animate-[badge-float_6s_ease-in-out_2s_infinite] lg:block">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-4 w-4 text-primary" />
                   <span className="whitespace-nowrap text-xs font-semibold">
-                    Chat via WhatsApp
+                    Contato direto no WhatsApp
                   </span>
                 </div>
               </div>
@@ -324,29 +539,41 @@ export function ProviderLandingPage() {
 
         <SectionDivider />
 
-        <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <RevealBlock>
+          <SocialProofSection registerHref={registerHref} ctaLabel={ctaCopy.middle} />
+        </RevealBlock>
+
+        <SectionDivider />
+
+        <RevealBlock>
+          <PainPointsSection />
+        </RevealBlock>
+
+        <SectionDivider />
+
+        <Section className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
+              <div className="max-w-3xl">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-                  Direto ao ponto
+                  Benefícios reais
                 </p>
                 <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                  Tudo que você precisa para começar
+                  O que muda quando você entra na plataforma
                 </h2>
               </div>
-              <Link href="/register?role=provider&source=providers">
+              <Link href={registerHref}>
                 <Button
                   variant="outline"
                   className="rounded-xl border-primary/20 bg-white text-primary hover:bg-primary/5"
                 >
-                  Criar perfil grátis
+                  {ctaCopy.benefits}
                 </Button>
               </Link>
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {proofItems.map((item) => (
+              {resultBenefits.map((item) => (
                 <div
                   key={item.title}
                   className="glass rounded-2xl border border-border/50 p-5 shadow-sm"
@@ -366,13 +593,13 @@ export function ProviderLandingPage() {
               ))}
             </div>
           </div>
-        </section>
+        </Section>
 
         <SectionDivider />
 
-        <section
+        <Section
           id="como-funciona"
-          className="bg-gradient-to-b from-primary/[0.03] to-transparent px-4 py-20 sm:px-6 sm:py-28 lg:px-8"
+          className="bg-gradient-to-b from-primary/[0.03] to-transparent px-4 py-20 sm:px-6 sm:py-24 lg:px-8"
         >
           <div className="mx-auto max-w-6xl">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -381,15 +608,15 @@ export function ProviderLandingPage() {
                   Como funciona
                 </p>
                 <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                  Crie seu perfil em 3 passos simples
+                  Simples, rápido e focado em contato
                 </h2>
               </div>
-              <Link href="/register?role=provider&source=providers">
+              <Link href={registerHref}>
                 <Button
                   variant="outline"
-                    className="rounded-xl border-primary/20 bg-white text-primary hover:bg-primary/5"
-                  >
-                    Abrir cadastro
+                  className="rounded-xl border-primary/20 bg-white text-primary hover:bg-primary/5"
+                >
+                  {ctaCopy.middle}
                 </Button>
               </Link>
             </div>
@@ -418,30 +645,29 @@ export function ProviderLandingPage() {
               ))}
             </div>
           </div>
-        </section>
+        </Section>
 
         <SectionDivider />
 
-        <section id="categorias" className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <Section id="categorias" className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-              <div className="rounded-2xl border border-border/50 glass p-8">
+              <div className="glass rounded-2xl border border-border/50 p-8">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
                   Ideal para
                 </p>
                 <h3 className="mt-4 text-2xl font-bold tracking-tight text-slate-950">
-                  Prestadores de serviços que precisam de mais demanda local
+                  Prestadores que querem sair da dependência de indicação
                 </h3>
                 <p className="mt-4 text-base leading-8 text-slate-600">
-                  A proposta funciona melhor para quem já atende por WhatsApp e
-                  quer um canal extra de entrada de clientes sem depender apenas
-                  de posts, stories ou indicação.
+                  Funciona para quem atende por WhatsApp e quer mais demanda
+                  local sem depender só de rede social.
                 </p>
                 <div className="mt-6 space-y-3">
                   {[
-                    "Apareça para clientes que já estão buscando esse serviço.",
-                    "Receba contatos diretos sem depender só de rede social.",
-                    "Tenha um perfil simples de atualizar e fácil de entender.",
+                    "Entre agora e ganhe vantagem competitiva local.",
+                    "Receba pedidos de clientes que já estão decidindo contratação.",
+                    "Atualize seu perfil quando quiser, sem burocracia.",
                   ].map((item) => (
                     <div key={item} className="flex items-start gap-3">
                       <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -451,7 +677,7 @@ export function ProviderLandingPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/50 glass p-8">
+              <div className="glass rounded-2xl border border-border/50 p-8">
                 <div className="flex flex-wrap gap-3">
                   {categories.map((item) => (
                     <span
@@ -468,33 +694,35 @@ export function ProviderLandingPage() {
                     <div className="flex items-center gap-2">
                       <Star className="h-4 w-4 text-primary" />
                       <span className="text-sm font-semibold text-slate-900">
-                        Perfil mais confiável
+                        Mais confiança para fechar
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-slate-600">
-                      Avaliações e portfólio ajudam você a competir melhor.
+                      Um perfil claro ajuda o cliente a escolher você com mais
+                      rapidez.
                     </p>
                   </div>
                   <div className="rounded-2xl bg-slate-50 p-4">
                     <div className="flex items-center gap-2">
                       <MessageCircle className="h-4 w-4 text-emerald-600" />
                       <span className="text-sm font-semibold text-slate-900">
-                        Conversa mais rápida
+                        Conversa no canal certo
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-slate-600">
-                      O cliente fala com você onde a conversa já fecha serviço.
+                      O cliente chama no WhatsApp e você responde sem perder
+                      tempo.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </Section>
 
         <SectionDivider />
 
-        <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <Section className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-3xl">
             <div className="mb-12 text-center">
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
@@ -507,9 +735,9 @@ export function ProviderLandingPage() {
 
             <ProviderFaqAccordion items={faqs} />
           </div>
-        </section>
+        </Section>
 
-        <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <Section className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="relative overflow-hidden rounded-3xl">
               <Image
@@ -523,26 +751,26 @@ export function ProviderLandingPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95" />
 
               <div className="relative p-10 text-center text-white sm:p-16">
-                <div className="absolute top-0 left-1/4 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
-                <div className="absolute right-1/4 bottom-0 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
+                <div className="absolute left-1/4 top-0 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
+                <div className="absolute bottom-0 right-1/4 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
 
                 <div className="relative">
                   <h2 className="text-3xl font-bold sm:text-4xl">
-                    Pronto para começar?
+                    Cadastre-se agora e saia na frente na sua cidade
                   </h2>
                   <p className="mx-auto mt-4 max-w-xl text-lg text-white/70">
-                    Crie seu perfil, apareça nas buscas e receba contatos de clientes
-                    na sua região.
+                    Quem entra primeiro aparece mais. Seu próximo cliente pode
+                    estar buscando serviço neste momento.
                   </p>
 
                   <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Link href="/register?role=provider&source=providers">
+                    <Link href={registerHref}>
                       <Button
                         size="lg"
                         className="gradient-bg h-12 rounded-xl border-0 px-8 text-base text-white shadow-lg hover:shadow-xl"
                       >
                         <BriefcaseBusiness className="h-4 w-4" />
-                        Criar perfil grátis
+                        {ctaCopy.final}
                       </Button>
                     </Link>
                     <Link href="/login">
@@ -558,7 +786,7 @@ export function ProviderLandingPage() {
               </div>
             </div>
           </div>
-        </section>
+        </Section>
       </main>
 
       <footer className="border-t border-border/50 px-4 py-12 sm:px-6 lg:px-8">
@@ -576,8 +804,8 @@ export function ProviderLandingPage() {
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                A plataforma que conecta você aos melhores prestadores de serviços da
-                sua região.
+                Plataforma para prestadores conseguirem mais clientes locais com
+                contato direto.
               </p>
             </div>
 
@@ -587,7 +815,7 @@ export function ProviderLandingPage() {
                 <li>
                   <Link
                     href="#como-funciona"
-                    className="hover:text-foreground transition-colors"
+                    className="transition-colors hover:text-foreground"
                   >
                     Como funciona
                   </Link>
@@ -595,17 +823,17 @@ export function ProviderLandingPage() {
                 <li>
                   <Link
                     href="#categorias"
-                    className="hover:text-foreground transition-colors"
+                    className="transition-colors hover:text-foreground"
                   >
                     Categorias
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/register?role=provider&source=providers"
-                    className="hover:text-foreground transition-colors"
+                    href={registerHref}
+                    className="transition-colors hover:text-foreground"
                   >
-                    Criar conta
+                    {ctaCopy.final}
                   </Link>
                 </li>
               </ul>
@@ -617,7 +845,7 @@ export function ProviderLandingPage() {
                 <li>
                   <Link
                     href="/terms"
-                    className="hover:text-foreground transition-colors"
+                    className="transition-colors hover:text-foreground"
                   >
                     Termos de uso
                   </Link>
@@ -625,7 +853,7 @@ export function ProviderLandingPage() {
                 <li>
                   <Link
                     href="/privacy"
-                    className="hover:text-foreground transition-colors"
+                    className="transition-colors hover:text-foreground"
                   >
                     Política de privacidade
                   </Link>
@@ -635,7 +863,8 @@ export function ProviderLandingPage() {
           </div>
 
           <div className="mt-10 border-t border-border/50 pt-6 text-center text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} eufaço! Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} eufaço! Todos os direitos
+            reservados.
           </div>
         </div>
       </footer>
