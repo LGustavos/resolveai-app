@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Loader2, Search as SearchIcon, Wrench, ArrowLeft, ArrowRight } from "lucide-react";
+import posthog from "posthog-js";
 import { cn } from "@/lib/utils";
 import { CategoryMultiSelect } from "@/components/ui/category-multi-select";
 import { fetchCepData, geocodeAddress, formatCep } from "@/lib/cep";
@@ -231,6 +232,15 @@ function RegisterPageContent() {
       return;
     }
 
+    posthog.identify(data.user!.id, {
+      email: email.trim(),
+      name: fullName.trim(),
+      role,
+    });
+    posthog.capture("user_signed_up", {
+      role,
+      method: "email",
+    });
     toast.success("Conta criada! Verifique seu email para confirmar.");
     router.push("/login");
   }

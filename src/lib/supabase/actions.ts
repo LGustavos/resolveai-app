@@ -2,11 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function signInAction(email: string, password: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -14,6 +15,18 @@ export async function signInAction(email: string, password: string) {
   if (error) {
     return { error: error.message };
   }
+
+  const posthog = getPostHogClient();
+  posthog.identify({
+    distinctId: data.user.id,
+    properties: { email: data.user.email },
+  });
+  posthog.capture({
+    distinctId: data.user.id,
+    event: "user_logged_in",
+    properties: { method: "email" },
+  });
+  await posthog.shutdown();
 
   redirect("/home");
 }

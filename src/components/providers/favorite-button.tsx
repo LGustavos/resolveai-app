@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toggleFavorite } from "@/lib/supabase/mutations";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 
 interface FavoriteButtonProps {
   providerId: string;
@@ -55,6 +56,9 @@ export function FavoriteButton({
       toast.error("Erro ao atualizar favorito.");
     } else {
       setIsFavorited(newState);
+      posthog.capture(newState ? "provider_favorited" : "provider_unfavorited", {
+        provider_id: providerId,
+      });
     }
 
     setLoading(false);

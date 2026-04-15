@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/queries";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function trackProfileView(providerId: string) {
   try {
@@ -24,6 +25,14 @@ export async function trackProfileView(providerId: string) {
       provider_id: providerId,
       viewer_id: user?.id ?? null,
     });
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: user?.id ?? "anonymous",
+      event: "provider_profile_viewed",
+      properties: { provider_id: providerId, is_logged_in: !!user },
+    });
+    await posthog.shutdown();
   } catch {
     // Silently fail — tracking should never break the page
   }

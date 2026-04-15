@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Star, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 
 interface ReviewFormProps {
   providerId: string;
@@ -56,6 +57,11 @@ export function ReviewForm({ providerId }: ReviewFormProps) {
     if (error) {
       toast.error("Erro ao enviar avaliação.");
     } else {
+      posthog.capture("review_submitted", {
+        provider_id: providerId,
+        rating,
+        has_comment: !!comment,
+      });
       toast.success("Avaliação enviada!");
       router.push(`/provider/${providerId}`);
       router.refresh();

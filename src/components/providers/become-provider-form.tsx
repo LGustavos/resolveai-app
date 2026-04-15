@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CategoryMultiSelect } from "@/components/ui/category-multi-select";
 import { toast } from "sonner";
 import { Loader2, Wrench } from "lucide-react";
+import posthog from "posthog-js";
 
 interface BecomeProviderFormProps {
   categories: { id: string; name: string; slug: string }[];
@@ -154,6 +155,12 @@ export function BecomeProviderForm({
       return;
     }
 
+    posthog.capture("become_provider_submitted", {
+      provider_type: providerType,
+      category_count: selectedCategories.length,
+      city: addressInfo.city,
+      state: addressInfo.state,
+    });
     toast.success("Perfil de prestador criado com sucesso!");
     router.push("/profile");
     router.refresh();

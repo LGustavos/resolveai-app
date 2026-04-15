@@ -37,6 +37,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import posthog from "posthog-js";
 
 interface ProviderDetailProps {
   provider: {
@@ -125,11 +126,19 @@ export function ProviderDetail({
     if (navigator.share) {
       try {
         await navigator.share(shareData);
+        posthog.capture("provider_profile_shared", {
+          provider_id: provider.id,
+          method: "native_share",
+        });
       } catch {
         // User cancelled
       }
     } else {
       await navigator.clipboard.writeText(url);
+      posthog.capture("provider_profile_shared", {
+        provider_id: provider.id,
+        method: "copy_link",
+      });
       toast.success("Link copiado!");
     }
   }
@@ -469,6 +478,10 @@ export function ProviderDetail({
                 return;
               }
               trackWhatsAppClick(provider.id);
+              posthog.capture("whatsapp_contact_clicked", {
+                provider_id: provider.id,
+                provider_name: provider.user.full_name,
+              });
               window.open(
                 getWhatsAppUrl(provider.whatsapp, provider.user.full_name),
                 "_blank",

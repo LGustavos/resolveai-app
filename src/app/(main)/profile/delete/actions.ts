@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentUser } from "@/lib/supabase/queries";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function deleteAccountAction() {
   const supabase = await createClient();
@@ -37,7 +38,16 @@ export async function deleteAccountAction() {
       return { error: "Erro ao excluir conta. Tente novamente." };
     }
 
-    // 3. Sign out current session
+    // 3. Track deletion before signing out
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: user.id,
+      event: "account_deleted",
+      properties: { role: user.role },
+    });
+    await posthog.shutdown();
+
+    // 4. Sign out current session
     await supabase.auth.signOut();
 
     return { success: true };
