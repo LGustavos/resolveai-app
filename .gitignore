@@ -50,3 +50,5 @@ next-env.d.ts
 *.aab
 *.apk
 .env.local
+
+src/lib/firebase/sw-env.generated.ts

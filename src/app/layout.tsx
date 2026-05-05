@@ -4,6 +4,7 @@ import { Geist } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import { LazyPwaPrompt } from "@/components/layout/lazy-pwa-prompt"
 import { GoogleAnalytics } from "@/components/analytics/google-analytics"
+import { PushForegroundListener } from "@/components/notifications/push-foreground-listener"
 import "./globals.css"
 
 const geist = Geist({
@@ -290,6 +291,7 @@ export default function RootLayout({
 				/>
 				{children}
 				<LazyPwaPrompt />
+				<PushForegroundListener />
 				<Toaster position='top-center' richColors closeButton />
 			</body>
 		</html>

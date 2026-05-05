@@ -22,6 +22,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PushNotificationsCard } from "@/components/notifications/push-notifications-card";
 
 interface ProfileViewProps {
   user: {
@@ -200,6 +201,8 @@ export function ProfileView({ user, providerProfile }: ProfileViewProps) {
           </div>
         </Link>
       )}
+
+      <PushNotificationsCard />
 
       {/* Menu items */}
       <div className="rounded-xl border border-border bg-card divide-y divide-border">
