@@ -14,8 +14,8 @@ const geist = Geist({
 export const metadata: Metadata = {
 	metadataBase: new URL("https://www.eufacooservico.com.br"),
 	title: {
-		default: "eufaço! - Serviços Locais",
-		template: "%s | eufaço!"
+		default: "Eufaço! - Serviços Locais",
+		template: "%s | Eufaço!"
 	},
 	description:
 		"Encontre prestadores de serviços locais na sua cidade. Pintores, eletricistas, encanadores e mais.",
